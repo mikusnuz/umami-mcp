@@ -5,8 +5,6 @@
 [![npm version](https://img.shields.io/npm/v/@mikusnuz/umami-mcp)](https://www.npmjs.com/package/@mikusnuz/umami-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<a href="https://glama.ai/mcp/servers"><img width="380" height="200" src="https://glama.ai/mcp/servers/badge" alt="umami-mcp MCP server" /></a>
-
 [Umami Analytics](https://umami.is) API v2를 전체 지원하는 **Model Context Protocol (MCP)** 서버입니다.
 
 기존 Umami MCP 구현체(읽기 전용, 도구 5개 이하)와 달리, 이 서버는 **21개 도구**, **2개 리소스**, **2개 프롬프트**를 제공하여 웹사이트 CRUD, 통계, 세션, 이벤트, 리포트 등 Umami API 전체를 커버합니다.

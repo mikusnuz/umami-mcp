@@ -5,8 +5,6 @@
 [![npm version](https://img.shields.io/npm/v/@mikusnuz/umami-mcp)](https://www.npmjs.com/package/@mikusnuz/umami-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<a href="https://glama.ai/mcp/servers"><img width="380" height="200" src="https://glama.ai/mcp/servers/badge" alt="umami-mcp MCP server" /></a>
-
 Full-coverage **Model Context Protocol (MCP)** server for [Umami Analytics](https://umami.is) API v2.
 
 Unlike existing Umami MCP implementations (read-only, ≤5 tools), this server provides **21 tools**, **2 resources**, and **2 prompts** covering the entire Umami API — websites CRUD, stats, sessions, events, and reports.
