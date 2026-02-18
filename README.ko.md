@@ -8,11 +8,11 @@
 
 [Umami Analytics](https://umami.is) API v2를 전체 지원하는 **Model Context Protocol (MCP)** 서버입니다.
 
-기존 Umami MCP 구현체(읽기 전용, 도구 5개 이하)와 달리, 이 서버는 **21개 도구**, **2개 리소스**, **2개 프롬프트**를 제공하여 웹사이트 CRUD, 통계, 세션, 이벤트, 리포트 등 Umami API 전체를 커버합니다.
+기존 Umami MCP 구현체(읽기 전용, 도구 5개 이하)와 달리, 이 서버는 **39개 도구**, **2개 리소스**, **2개 프롬프트**를 제공하여 웹사이트 CRUD, 통계, 세션, 이벤트, 리포트, 유저/팀 관리, 실시간 데이터 등 Umami API 전체를 커버합니다.
 
 ## 주요 기능
 
-- **21개 도구** — 웹사이트 전체 CRUD, 상세 분석, 세션 추적, 이벤트 전송, 리포트 관리
+- **39개 도구** — 웹사이트 전체 CRUD, 상세 분석, 세션 추적, 이벤트 전송, 리포트 관리, 유저/팀 관리, 실시간 모니터링
 - **2개 리소스** — 웹사이트 목록 및 계정 정보 빠른 조회
 - **2개 프롬프트** — 사전 구성된 분석 워크플로 (사이트 개요, 트래픽 비교)
 - **이중 인증** — 셀프 호스팅(아이디/비밀번호 → JWT) 및 Umami Cloud(API 키) 지원
@@ -73,7 +73,7 @@ export UMAMI_USERNAME="admin"
 export UMAMI_PASSWORD="your-password"
 ```
 
-## 도구 (21개)
+## 도구 (39개)
 
 ### 웹사이트 (6개)
 
@@ -120,6 +120,39 @@ export UMAMI_PASSWORD="your-password"
 | `get_report` | 리포트 상세 정보 |
 | `create_report` | 리포트 생성 및 저장 |
 | `run_report` | 리포트 실행 (funnel, retention, utm, goals, insights, revenue, journey) |
+
+### 유저 (7개, 관리자 전용)
+
+| 도구 | 설명 |
+|------|------|
+| `list_users` | 전체 유저 목록 조회 |
+| `create_user` | 유저 생성 (사용자명, 비밀번호, 역할) |
+| `get_user` | 유저 상세 정보 조회 |
+| `update_user` | 유저 수정 (사용자명, 비밀번호 또는 역할) |
+| `delete_user` | 유저 삭제 |
+| `get_user_websites` | 유저가 접근 가능한 웹사이트 목록 |
+| `get_user_usage` | 유저 사용량 통계 |
+
+### 팀 (10개)
+
+| 도구 | 설명 |
+|------|------|
+| `list_teams` | 전체 팀 목록 조회 |
+| `create_team` | 팀 생성 |
+| `get_team` | 팀 상세 정보 조회 |
+| `update_team` | 팀 이름 수정 |
+| `delete_team` | 팀 삭제 |
+| `join_team` | 액세스 코드로 팀 참가 |
+| `list_team_users` | 팀 멤버 목록 |
+| `add_team_user` | 팀에 유저 추가 |
+| `update_team_user` | 팀 멤버 역할 수정 |
+| `remove_team_user` | 팀에서 유저 제거 |
+
+### 실시간 (1개)
+
+| 도구 | 설명 |
+|------|------|
+| `get_realtime` | 최근 30분 실시간 데이터 (방문자, URL, 리퍼러, 국가, 이벤트) |
 
 ## 리소스 (2개)
 

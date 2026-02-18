@@ -8,11 +8,11 @@
 
 Full-coverage **Model Context Protocol (MCP)** server for [Umami Analytics](https://umami.is) API v2.
 
-Unlike existing Umami MCP implementations (read-only, ≤5 tools), this server provides **21 tools**, **2 resources**, and **2 prompts** covering the entire Umami API — websites CRUD, stats, sessions, events, and reports.
+Unlike existing Umami MCP implementations (read-only, ≤5 tools), this server provides **39 tools**, **2 resources**, and **2 prompts** covering the entire Umami API — websites CRUD, stats, sessions, events, reports, user management, teams, and realtime data.
 
 ## Features
 
-- **21 Tools** — Full CRUD for websites, detailed analytics, session tracking, event sending, and report management
+- **39 Tools** — Full CRUD for websites, detailed analytics, session tracking, event sending, report management, user/team administration, and realtime monitoring
 - **2 Resources** — Quick access to website list and account info
 - **2 Prompts** — Pre-built analytics workflows (site overview, traffic comparison)
 - **Dual Auth** — Self-hosted (username/password → JWT) and Umami Cloud (API key)
@@ -73,7 +73,7 @@ export UMAMI_USERNAME="admin"
 export UMAMI_PASSWORD="your-password"
 ```
 
-## Tools (21)
+## Tools (39)
 
 ### Websites (6)
 
@@ -120,6 +120,39 @@ export UMAMI_PASSWORD="your-password"
 | `get_report` | Get report details |
 | `create_report` | Create and save a report |
 | `run_report` | Execute a report (funnel, retention, utm, goals, insights, revenue, journey) |
+
+### Users (7, admin only)
+
+| Tool | Description |
+|------|-------------|
+| `list_users` | List all users |
+| `create_user` | Create a new user (username, password, role) |
+| `get_user` | Get user details |
+| `update_user` | Update user (username, password, or role) |
+| `delete_user` | Delete a user |
+| `get_user_websites` | List websites a user has access to |
+| `get_user_usage` | Get usage statistics for a user |
+
+### Teams (10)
+
+| Tool | Description |
+|------|-------------|
+| `list_teams` | List all teams |
+| `create_team` | Create a new team |
+| `get_team` | Get team details |
+| `update_team` | Update team name |
+| `delete_team` | Delete a team |
+| `join_team` | Join a team using an access code |
+| `list_team_users` | List team members |
+| `add_team_user` | Add a user to a team |
+| `update_team_user` | Update a team member's role |
+| `remove_team_user` | Remove a user from a team |
+
+### Realtime (1)
+
+| Tool | Description |
+|------|-------------|
+| `get_realtime` | Real-time data for last 30 minutes (visitors, URLs, referrers, countries, events) |
 
 ## Resources (2)
 
