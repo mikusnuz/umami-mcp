@@ -1,3 +1,5 @@
+**English** | [한국어](README.ko.md)
+
 # umami-mcp
 
 [![npm version](https://img.shields.io/npm/v/@mikusnuz/umami-mcp)](https://www.npmjs.com/package/@mikusnuz/umami-mcp)
