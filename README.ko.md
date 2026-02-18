@@ -4,6 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@mikusnuz/umami-mcp)](https://www.npmjs.com/package/@mikusnuz/umami-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![MCP Badge](https://lobehub.com/badge/mcp/mikusnuz-umami-mcp)](https://lobehub.com/mcp/mikusnuz-umami-mcp)
 
 [Umami Analytics](https://umami.is) API v2를 전체 지원하는 **Model Context Protocol (MCP)** 서버입니다.
 
