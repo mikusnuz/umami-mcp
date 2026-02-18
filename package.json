@@ -1,6 +1,6 @@
 {
   "name": "@mikusnuz/umami-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Full-coverage MCP server for Umami Analytics API v2",
   "type": "module",
   "bin": {
