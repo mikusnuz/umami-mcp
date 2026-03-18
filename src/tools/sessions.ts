@@ -50,4 +50,43 @@ export function registerSessionTools(server: McpServer, client: UmamiClient) {
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
+
+  server.tool(
+    "get_session_data_properties",
+    "Get session data property names and their data types for a website",
+    {
+      websiteId: z.string().describe("Website UUID"),
+      startAt: z.number().describe("Start timestamp in milliseconds"),
+      endAt: z.number().describe("End timestamp in milliseconds"),
+    },
+    async ({ websiteId, startAt, endAt }) => {
+      const data = await client.call(
+        "GET",
+        `/api/websites/${websiteId}/session-data/properties`,
+        undefined,
+        { startAt, endAt }
+      );
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "get_session_data_values",
+    "Get session data values (aggregated counts for session properties) for a website",
+    {
+      websiteId: z.string().describe("Website UUID"),
+      startAt: z.number().describe("Start timestamp in milliseconds"),
+      endAt: z.number().describe("End timestamp in milliseconds"),
+      propertyName: z.string().optional().describe("Filter by property name"),
+    },
+    async ({ websiteId, startAt, endAt, propertyName }) => {
+      const data = await client.call(
+        "GET",
+        `/api/websites/${websiteId}/session-data/values`,
+        undefined,
+        { startAt, endAt, propertyName }
+      );
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
 }

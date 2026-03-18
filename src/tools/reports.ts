@@ -40,7 +40,7 @@ export function registerReportTools(server: McpServer, client: UmamiClient) {
       websiteId: z.string().describe("Website UUID"),
       name: z.string().describe("Report name"),
       type: z
-        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey"])
+        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey", "attribution"])
         .describe("Report type"),
       description: z.string().optional().describe("Report description"),
       parameters: z
@@ -58,11 +58,52 @@ export function registerReportTools(server: McpServer, client: UmamiClient) {
   );
 
   server.tool(
+    "update_report",
+    "Update an existing saved report",
+    {
+      reportId: z.string().describe("Report UUID"),
+      websiteId: z.string().optional().describe("Website UUID"),
+      name: z.string().optional().describe("Report name"),
+      type: z
+        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey", "attribution"])
+        .optional()
+        .describe("Report type"),
+      description: z.string().optional().describe("Report description"),
+      parameters: z
+        .record(z.unknown())
+        .optional()
+        .describe("Report-specific parameters (JSON object)"),
+    },
+    async ({ reportId, websiteId, name, type, description, parameters }) => {
+      const body: Record<string, unknown> = {};
+      if (websiteId !== undefined) body.websiteId = websiteId;
+      if (name !== undefined) body.name = name;
+      if (type !== undefined) body.type = type;
+      if (description !== undefined) body.description = description;
+      if (parameters !== undefined) body.parameters = parameters;
+      const data = await client.call("POST", `/api/reports/${reportId}`, body);
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "delete_report",
+    "Delete a saved report",
+    {
+      reportId: z.string().describe("Report UUID to delete"),
+    },
+    async ({ reportId }) => {
+      await client.call("DELETE", `/api/reports/${reportId}`);
+      return { content: [{ type: "text", text: `Report ${reportId} deleted successfully.` }] };
+    }
+  );
+
+  server.tool(
     "run_report",
-    "Execute a report by type and get results (funnel, retention, utm, goals, insights, revenue, journey)",
+    "Execute a report by type and get results (funnel, retention, utm, goals, insights, revenue, journey, attribution)",
     {
       type: z
-        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey"])
+        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey", "attribution"])
         .describe("Report type to run"),
       websiteId: z.string().describe("Website UUID"),
       parameters: z

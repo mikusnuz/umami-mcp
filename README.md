@@ -8,11 +8,11 @@
 
 Full-coverage **Model Context Protocol (MCP)** server for [Umami Analytics](https://umami.is) API v2.
 
-Unlike existing Umami MCP implementations (read-only, ≤5 tools), this server provides **39 tools**, **2 resources**, and **2 prompts** covering the entire Umami API — websites CRUD, stats, sessions, events, reports, user management, teams, and realtime data.
+Unlike existing Umami MCP implementations (read-only, ≤5 tools), this server provides **66 tools**, **2 resources**, and **2 prompts** covering the entire Umami API — websites CRUD, stats, sessions, events, event-data, session-data, reports, user management, teams, realtime, account, and more.
 
 ## Features
 
-- **39 Tools** — Full CRUD for websites, detailed analytics, session tracking, event sending, report management, user/team administration, and realtime monitoring
+- **66 Tools** — Full CRUD for websites, detailed analytics, session tracking, event sending & event-data queries, report management (including attribution), user/team administration, team-website management, account management, batch events, and realtime monitoring
 - **2 Resources** — Quick access to website list and account info
 - **2 Prompts** — Pre-built analytics workflows (site overview, traffic comparison)
 - **Dual Auth** — Self-hosted (username/password → JWT) and Umami Cloud (API key)
@@ -73,9 +73,9 @@ export UMAMI_USERNAME="admin"
 export UMAMI_PASSWORD="your-password"
 ```
 
-## Tools (39)
+## Tools (66)
 
-### Websites (6)
+### Websites (9)
 
 | Tool | Description |
 |------|-------------|
@@ -85,8 +85,11 @@ export UMAMI_PASSWORD="your-password"
 | `update_website` | Update website configuration |
 | `delete_website` | Delete a website |
 | `get_active_visitors` | Get current active visitor count |
+| `reset_website` | Reset all analytics data for a website |
+| `transfer_website` | Transfer website ownership to another user |
+| `get_website_reports` | Get all reports for a website |
 
-### Stats & Analytics (6)
+### Stats & Analytics (9)
 
 | Tool | Description |
 |------|-------------|
@@ -96,32 +99,44 @@ export UMAMI_PASSWORD="your-password"
 | `get_events` | Event data over time |
 | `get_sessions` | Session listing with filters |
 | `get_daterange` | Available data date range |
+| `get_event_series` | Event metrics over time (event series) |
+| `get_session_stats` | Summarized session statistics |
+| `get_sessions_weekly` | Weekly session data |
 
-### Sessions (3)
+### Sessions (5)
 
 | Tool | Description |
 |------|-------------|
 | `get_session` | Session details |
 | `get_session_activity` | Session activity log |
 | `get_session_properties` | Session custom properties |
+| `get_session_data_properties` | Session data property names and types |
+| `get_session_data_values` | Session data aggregated values |
 
-### Events (2)
+### Events (7)
 
 | Tool | Description |
 |------|-------------|
 | `send_event` | Send custom events/pageviews (server-side tracking) |
 | `get_event_values` | Event/session property values |
+| `get_event_data_events` | Event data events (custom event names and counts) |
+| `get_event_data_fields` | Event data fields (property keys and types) |
+| `get_event_data_values` | Event data values (aggregated counts for a property) |
+| `get_event_data_stats` | Event data statistics summary |
+| `batch_events` | Send multiple events in a single batch request |
 
-### Reports (4)
+### Reports (6)
 
 | Tool | Description |
 |------|-------------|
 | `list_reports` | List saved reports |
 | `get_report` | Get report details |
 | `create_report` | Create and save a report |
-| `run_report` | Execute a report (funnel, retention, utm, goals, insights, revenue, journey) |
+| `update_report` | Update an existing report |
+| `delete_report` | Delete a saved report |
+| `run_report` | Execute a report (funnel, retention, utm, goals, insights, revenue, journey, attribution) |
 
-### Users (7, admin only)
+### Users (8, admin only)
 
 | Tool | Description |
 |------|-------------|
@@ -132,8 +147,9 @@ export UMAMI_PASSWORD="your-password"
 | `delete_user` | Delete a user |
 | `get_user_websites` | List websites a user has access to |
 | `get_user_usage` | Get usage statistics for a user |
+| `get_user_teams` | List teams a user belongs to |
 
-### Teams (10)
+### Teams (14)
 
 | Tool | Description |
 |------|-------------|
@@ -144,9 +160,25 @@ export UMAMI_PASSWORD="your-password"
 | `delete_team` | Delete a team |
 | `join_team` | Join a team using an access code |
 | `list_team_users` | List team members |
+| `get_team_user` | Get details of a specific team member |
 | `add_team_user` | Add a user to a team |
 | `update_team_user` | Update a team member's role |
 | `remove_team_user` | Remove a user from a team |
+| `list_team_websites` | List websites belonging to a team |
+| `add_team_website` | Add a website to a team |
+| `remove_team_website` | Remove a website from a team |
+
+### Account (7)
+
+| Tool | Description |
+|------|-------------|
+| `get_me` | Get current authenticated user profile |
+| `get_my_websites` | List current user's websites |
+| `get_my_teams` | List current user's teams |
+| `update_my_password` | Update current user's password |
+| `verify_auth` | Verify authentication token is valid |
+| `get_share` | Get shared website data by share ID |
+| `heartbeat` | Check if Umami server is healthy |
 
 ### Realtime (1)
 
@@ -183,6 +215,16 @@ Use the traffic_compare prompt to compare last week vs this week for website abc
 ### Send server-side event
 ```
 Use send_event to track a "signup" event on my website with data { plan: "pro" }.
+```
+
+### Batch multiple events
+```
+Use batch_events to send 3 pageview events for different pages on my website.
+```
+
+### Check server health
+```
+Use heartbeat to check if the Umami server is running.
 ```
 
 ## Development

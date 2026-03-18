@@ -117,4 +117,23 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
+
+  server.tool(
+    "get_user_teams",
+    "Get the list of teams a user belongs to (admin only)",
+    {
+      userId: z.string().describe("User UUID"),
+      page: z.number().optional().describe("Page number (1-based)"),
+      pageSize: z.number().optional().describe("Results per page"),
+      query: z.string().optional().describe("Search query to filter teams"),
+    },
+    async ({ userId, page, pageSize, query }) => {
+      const data = await client.call("GET", `/api/users/${userId}/teams`, undefined, {
+        page,
+        pageSize,
+        query,
+      });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
 }

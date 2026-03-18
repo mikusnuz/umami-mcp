@@ -132,6 +132,19 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
   );
 
   server.tool(
+    "get_team_user",
+    "Get details of a specific team member",
+    {
+      teamId: z.string().describe("Team UUID"),
+      userId: z.string().describe("User UUID"),
+    },
+    async ({ teamId, userId }) => {
+      const data = await client.call("GET", `/api/teams/${teamId}/users/${userId}`);
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
     "remove_team_user",
     "Remove a user from a team",
     {
@@ -141,6 +154,51 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     async ({ teamId, userId }) => {
       await client.call("DELETE", `/api/teams/${teamId}/users/${userId}`);
       return { content: [{ type: "text", text: `User ${userId} removed from team ${teamId}.` }] };
+    }
+  );
+
+  server.tool(
+    "list_team_websites",
+    "List all websites that belong to a team",
+    {
+      teamId: z.string().describe("Team UUID"),
+      page: z.number().optional().describe("Page number (1-based)"),
+      pageSize: z.number().optional().describe("Results per page"),
+      query: z.string().optional().describe("Search query to filter websites"),
+    },
+    async ({ teamId, page, pageSize, query }) => {
+      const data = await client.call("GET", `/api/teams/${teamId}/websites`, undefined, {
+        page,
+        pageSize,
+        query,
+      });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "add_team_website",
+    "Add a website to a team",
+    {
+      teamId: z.string().describe("Team UUID"),
+      websiteId: z.string().describe("Website UUID to add to the team"),
+    },
+    async ({ teamId, websiteId }) => {
+      const data = await client.call("POST", `/api/teams/${teamId}/websites`, { websiteId });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "remove_team_website",
+    "Remove a website from a team",
+    {
+      teamId: z.string().describe("Team UUID"),
+      websiteId: z.string().describe("Website UUID to remove from the team"),
+    },
+    async ({ teamId, websiteId }) => {
+      await client.call("DELETE", `/api/teams/${teamId}/websites/${websiteId}`);
+      return { content: [{ type: "text", text: `Website ${websiteId} removed from team ${teamId}.` }] };
     }
   );
 }

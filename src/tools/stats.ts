@@ -150,4 +150,64 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
+
+  server.tool(
+    "get_event_series",
+    "Get event metrics over time (event series data) for a website",
+    {
+      websiteId: z.string().describe("Website UUID"),
+      ...dateRange,
+      unit: z.enum(["hour", "day", "week", "month", "year"]).describe("Time grouping unit"),
+      timezone: z.string().optional().describe("Timezone (e.g. 'Asia/Seoul')"),
+      url: z.string().optional().describe("Filter by URL path"),
+      eventName: z.string().optional().describe("Filter by event name"),
+    },
+    async ({ websiteId, startAt, endAt, unit, timezone, url, eventName }) => {
+      const data = await client.call("GET", `/api/websites/${websiteId}/events/series`, undefined, {
+        startAt,
+        endAt,
+        unit,
+        timezone,
+        url,
+        eventName,
+      });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "get_session_stats",
+    "Get summarized session statistics for a website (total sessions, unique visitors, etc.)",
+    {
+      websiteId: z.string().describe("Website UUID"),
+      ...dateRange,
+      url: z.string().optional().describe("Filter by URL path"),
+      referrer: z.string().optional().describe("Filter by referrer"),
+    },
+    async ({ websiteId, startAt, endAt, url, referrer }) => {
+      const data = await client.call("GET", `/api/websites/${websiteId}/sessions/stats`, undefined, {
+        startAt,
+        endAt,
+        url,
+        referrer,
+      });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "get_sessions_weekly",
+    "Get weekly session data for a website",
+    {
+      websiteId: z.string().describe("Website UUID"),
+      ...dateRange,
+    },
+    async ({ websiteId, startAt, endAt }) => {
+      const data = await client.call("GET", `/api/websites/${websiteId}/sessions/weekly`, undefined, {
+        startAt,
+        endAt,
+      });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
 }

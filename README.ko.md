@@ -8,11 +8,11 @@
 
 [Umami Analytics](https://umami.is) API v2를 전체 지원하는 **Model Context Protocol (MCP)** 서버입니다.
 
-기존 Umami MCP 구현체(읽기 전용, 도구 5개 이하)와 달리, 이 서버는 **39개 도구**, **2개 리소스**, **2개 프롬프트**를 제공하여 웹사이트 CRUD, 통계, 세션, 이벤트, 리포트, 유저/팀 관리, 실시간 데이터 등 Umami API 전체를 커버합니다.
+기존 Umami MCP 구현체(읽기 전용, 도구 5개 이하)와 달리, 이 서버는 **66개 도구**, **2개 리소스**, **2개 프롬프트**를 제공하여 웹사이트 CRUD, 통계, 세션, 이벤트, 이벤트 데이터, 세션 데이터, 리포트, 유저/팀 관리, 팀-웹사이트 관리, 계정 관리, 배치 이벤트, 실시간 데이터 등 Umami API 전체를 커버합니다.
 
 ## 주요 기능
 
-- **39개 도구** — 웹사이트 전체 CRUD, 상세 분석, 세션 추적, 이벤트 전송, 리포트 관리, 유저/팀 관리, 실시간 모니터링
+- **66개 도구** — 웹사이트 전체 CRUD, 상세 분석, 세션 추적, 이벤트 전송 및 이벤트 데이터 조회, 리포트 관리(어트리뷰션 포함), 유저/팀 관리, 팀-웹사이트 관리, 계정 관리, 배치 이벤트, 실시간 모니터링
 - **2개 리소스** — 웹사이트 목록 및 계정 정보 빠른 조회
 - **2개 프롬프트** — 사전 구성된 분석 워크플로 (사이트 개요, 트래픽 비교)
 - **이중 인증** — 셀프 호스팅(아이디/비밀번호 → JWT) 및 Umami Cloud(API 키) 지원
@@ -73,9 +73,9 @@ export UMAMI_USERNAME="admin"
 export UMAMI_PASSWORD="your-password"
 ```
 
-## 도구 (39개)
+## 도구 (66개)
 
-### 웹사이트 (6개)
+### 웹사이트 (9개)
 
 | 도구 | 설명 |
 |------|------|
@@ -85,8 +85,11 @@ export UMAMI_PASSWORD="your-password"
 | `update_website` | 웹사이트 설정 수정 |
 | `delete_website` | 웹사이트 삭제 |
 | `get_active_visitors` | 현재 활성 방문자 수 조회 |
+| `reset_website` | 웹사이트의 모든 분석 데이터 초기화 |
+| `transfer_website` | 웹사이트 소유권을 다른 유저에게 이전 |
+| `get_website_reports` | 웹사이트의 모든 리포트 조회 |
 
-### 통계 및 분석 (6개)
+### 통계 및 분석 (9개)
 
 | 도구 | 설명 |
 |------|------|
@@ -96,32 +99,44 @@ export UMAMI_PASSWORD="your-password"
 | `get_events` | 시간별 이벤트 데이터 |
 | `get_sessions` | 필터 조건이 있는 세션 목록 |
 | `get_daterange` | 사용 가능한 데이터 날짜 범위 |
+| `get_event_series` | 이벤트 메트릭 시계열 데이터 |
+| `get_session_stats` | 세션 요약 통계 |
+| `get_sessions_weekly` | 주간 세션 데이터 |
 
-### 세션 (3개)
+### 세션 (5개)
 
 | 도구 | 설명 |
 |------|------|
 | `get_session` | 세션 상세 정보 |
 | `get_session_activity` | 세션 활동 로그 |
 | `get_session_properties` | 세션 커스텀 속성 |
+| `get_session_data_properties` | 세션 데이터 속성명 및 타입 조회 |
+| `get_session_data_values` | 세션 데이터 집계 값 조회 |
 
-### 이벤트 (2개)
+### 이벤트 (7개)
 
 | 도구 | 설명 |
 |------|------|
 | `send_event` | 커스텀 이벤트/페이지뷰 전송 (서버 사이드 추적) |
 | `get_event_values` | 이벤트/세션 속성 값 조회 |
+| `get_event_data_events` | 이벤트 데이터 이벤트 (커스텀 이벤트명 및 횟수) |
+| `get_event_data_fields` | 이벤트 데이터 필드 (속성 키 및 타입) |
+| `get_event_data_values` | 이벤트 데이터 값 (속성별 집계 횟수) |
+| `get_event_data_stats` | 이벤트 데이터 통계 요약 |
+| `batch_events` | 여러 이벤트를 단일 배치로 전송 |
 
-### 리포트 (4개)
+### 리포트 (6개)
 
 | 도구 | 설명 |
 |------|------|
 | `list_reports` | 저장된 리포트 목록 |
 | `get_report` | 리포트 상세 정보 |
 | `create_report` | 리포트 생성 및 저장 |
-| `run_report` | 리포트 실행 (funnel, retention, utm, goals, insights, revenue, journey) |
+| `update_report` | 기존 리포트 수정 |
+| `delete_report` | 저장된 리포트 삭제 |
+| `run_report` | 리포트 실행 (funnel, retention, utm, goals, insights, revenue, journey, attribution) |
 
-### 유저 (7개, 관리자 전용)
+### 유저 (8개, 관리자 전용)
 
 | 도구 | 설명 |
 |------|------|
@@ -132,8 +147,9 @@ export UMAMI_PASSWORD="your-password"
 | `delete_user` | 유저 삭제 |
 | `get_user_websites` | 유저가 접근 가능한 웹사이트 목록 |
 | `get_user_usage` | 유저 사용량 통계 |
+| `get_user_teams` | 유저가 속한 팀 목록 |
 
-### 팀 (10개)
+### 팀 (14개)
 
 | 도구 | 설명 |
 |------|------|
@@ -144,9 +160,25 @@ export UMAMI_PASSWORD="your-password"
 | `delete_team` | 팀 삭제 |
 | `join_team` | 액세스 코드로 팀 참가 |
 | `list_team_users` | 팀 멤버 목록 |
+| `get_team_user` | 특정 팀 멤버 상세 정보 조회 |
 | `add_team_user` | 팀에 유저 추가 |
 | `update_team_user` | 팀 멤버 역할 수정 |
 | `remove_team_user` | 팀에서 유저 제거 |
+| `list_team_websites` | 팀 소속 웹사이트 목록 |
+| `add_team_website` | 팀에 웹사이트 추가 |
+| `remove_team_website` | 팀에서 웹사이트 제거 |
+
+### 계정 (7개)
+
+| 도구 | 설명 |
+|------|------|
+| `get_me` | 현재 인증된 유저 프로필 조회 |
+| `get_my_websites` | 현재 유저의 웹사이트 목록 |
+| `get_my_teams` | 현재 유저의 팀 목록 |
+| `update_my_password` | 현재 유저 비밀번호 변경 |
+| `verify_auth` | 인증 토큰 유효성 검증 |
+| `get_share` | 공유 ID로 공유 웹사이트 데이터 조회 |
+| `heartbeat` | Umami 서버 상태 확인 |
 
 ### 실시간 (1개)
 
@@ -183,6 +215,16 @@ Use the traffic_compare prompt to compare last week vs this week for website abc
 ### 서버 사이드 이벤트 전송
 ```
 Use send_event to track a "signup" event on my website with data { plan: "pro" }.
+```
+
+### 배치 이벤트 전송
+```
+Use batch_events to send 3 pageview events for different pages on my website.
+```
+
+### 서버 상태 확인
+```
+Use heartbeat to check if the Umami server is running.
 ```
 
 ## 개발

@@ -93,4 +93,41 @@ export function registerWebsiteTools(server: McpServer, client: UmamiClient) {
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
+
+  server.tool(
+    "reset_website",
+    "Reset a website by removing all its analytics data (irreversible)",
+    {
+      websiteId: z.string().describe("Website UUID to reset"),
+    },
+    async ({ websiteId }) => {
+      await client.call("POST", `/api/websites/${websiteId}/reset`);
+      return { content: [{ type: "text", text: `Website ${websiteId} data has been reset.` }] };
+    }
+  );
+
+  server.tool(
+    "transfer_website",
+    "Transfer website ownership to another user",
+    {
+      websiteId: z.string().describe("Website UUID to transfer"),
+      userId: z.string().describe("Target user UUID to transfer ownership to"),
+    },
+    async ({ websiteId, userId }) => {
+      const data = await client.call("POST", `/api/websites/${websiteId}/transfer`, { userId });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "get_website_reports",
+    "Get all reports associated with a specific website",
+    {
+      websiteId: z.string().describe("Website UUID"),
+    },
+    async ({ websiteId }) => {
+      const data = await client.call("GET", `/api/websites/${websiteId}/reports`);
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
 }
