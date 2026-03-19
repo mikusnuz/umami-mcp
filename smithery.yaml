@@ -1,0 +1,24 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - umamiUrl
+    properties:
+      umamiUrl:
+        type: string
+        description: Your Umami instance URL (e.g. https://analytics.example.com)
+      umamiUsername:
+        type: string
+        description: Login username (for self-hosted)
+      umamiPassword:
+        type: string
+        description: Login password (for self-hosted)
+      umamiApiKey:
+        type: string
+        description: API key (for Umami Cloud)
+  commandFunction:
+    |-
+    config => ({ command: 'npx', args: ['-y', '@mikusnuz/umami-mcp'], env: { UMAMI_URL: config.umamiUrl, UMAMI_USERNAME: config.umamiUsername || '', UMAMI_PASSWORD: config.umamiPassword || '', UMAMI_API_KEY: config.umamiApiKey || '' } })
