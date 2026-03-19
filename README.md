@@ -10,6 +10,19 @@ Full-coverage **Model Context Protocol (MCP)** server for [Umami Analytics](http
 
 Unlike existing Umami MCP implementations (read-only, ≤5 tools), this server provides **66 tools**, **2 resources**, and **2 prompts** covering the entire Umami API — websites CRUD, stats, sessions, events, event-data, session-data, reports, user management, teams, realtime, account, and more.
 
+## When to Use
+
+Use this MCP when you need to:
+
+- **"Show me website analytics for the last 7 days"** — get stats, pageviews, and metrics with date filters
+- **"Which pages got the most views this month?"** — query aggregated metrics by URL
+- **"Compare traffic between two date ranges"** — use the traffic_compare prompt or get_stats with different ranges
+- **"Set up a new website in Umami"** — create and configure tracked websites
+- **"Get real-time active visitors"** — check active visitors and real-time data
+- **"Export analytics report"** — create, run, and retrieve reports (funnel, retention, UTM, goals, revenue, attribution)
+- **"Track a custom event from the server"** — send events or batch events programmatically
+- **"Manage team access to analytics"** — create teams, add users and websites to teams
+
 ## Features
 
 - **66 Tools** — Full CRUD for websites, detailed analytics, session tracking, event sending & event-data queries, report management (including attribution), user/team administration, team-website management, account management, batch events, and realtime monitoring
