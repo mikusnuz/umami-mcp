@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.mikusnuz/umami",
-  "description": "Full-coverage MCP server for Umami Analytics API v2 — 66 tools for websites, stats, sessions, events, reports, users, teams, and realtime monitoring",
+  "description": "MCP server for Umami Analytics API v2 — websites, stats, events, reports, and realtime",
   "repository": {
     "url": "https://github.com/mikusnuz/umami-mcp",
     "source": "github"
