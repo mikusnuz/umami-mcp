@@ -2,7 +2,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { loadConfig } from "./config.js";
+import { loadConfig, UmamiConfig } from "./config.js";
 import { UmamiClient } from "./client.js";
 import { registerWebsiteTools } from "./tools/websites.js";
 import { registerStatsTools } from "./tools/stats.js";
@@ -52,3 +52,35 @@ main().catch((err) => {
   console.error("Fatal error:", err);
   process.exit(1);
 });
+
+// ── Smithery Sandbox ──
+
+export function createSandboxServer() {
+  const sandbox = new McpServer({
+    name: "umami-mcp",
+    version: "1.2.0",
+  });
+
+  const mockConfig: UmamiConfig = {
+    baseUrl: "https://example.com",
+    username: "",
+    password: "",
+    apiKey: "",
+  };
+  const mockClient = new UmamiClient(mockConfig);
+
+  registerWebsiteTools(sandbox, mockClient);
+  registerStatsTools(sandbox, mockClient);
+  registerSessionTools(sandbox, mockClient);
+  registerEventTools(sandbox, mockClient);
+  registerReportTools(sandbox, mockClient);
+  registerUserTools(sandbox, mockClient);
+  registerTeamTools(sandbox, mockClient);
+  registerRealtimeTools(sandbox, mockClient);
+  registerAccountTools(sandbox, mockClient);
+  registerWebsiteResources(sandbox, mockClient);
+  registerAccountResources(sandbox, mockClient);
+  registerPrompts(sandbox);
+
+  return sandbox;
+}
