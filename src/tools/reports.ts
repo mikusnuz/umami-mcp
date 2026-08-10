@@ -7,12 +7,14 @@ export function registerReportTools(server: McpServer, client: UmamiClient) {
     "list_reports",
     "List all saved reports",
     {
+      websiteId: z.string().optional().describe("Website UUID to filter reports"),
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
       orderBy: z.string().optional().describe("Field to order by"),
     },
-    async ({ page, pageSize, orderBy }) => {
+    async ({ websiteId, page, pageSize, orderBy }) => {
       const data = await client.call("GET", "/api/reports", undefined, {
+        websiteId,
         page,
         pageSize,
         orderBy,
@@ -40,7 +42,7 @@ export function registerReportTools(server: McpServer, client: UmamiClient) {
       websiteId: z.string().describe("Website UUID"),
       name: z.string().describe("Report name"),
       type: z
-        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey", "attribution"])
+        .enum(["attribution", "breakdown", "funnel", "goal", "heatmap", "journey", "performance", "retention", "revenue", "utm"])
         .describe("Report type"),
       description: z.string().optional().describe("Report description"),
       parameters: z
@@ -65,7 +67,7 @@ export function registerReportTools(server: McpServer, client: UmamiClient) {
       websiteId: z.string().optional().describe("Website UUID"),
       name: z.string().optional().describe("Report name"),
       type: z
-        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey", "attribution"])
+        .enum(["attribution", "breakdown", "funnel", "goal", "heatmap", "journey", "performance", "retention", "revenue", "utm"])
         .optional()
         .describe("Report type"),
       description: z.string().optional().describe("Report description"),
@@ -100,10 +102,10 @@ export function registerReportTools(server: McpServer, client: UmamiClient) {
 
   server.tool(
     "run_report",
-    "Execute a report by type and get results (funnel, retention, utm, goals, insights, revenue, journey, attribution)",
+    "Execute a report by type and get results (attribution, breakdown, funnel, goal, heatmap, journey, performance, retention, revenue, utm)",
     {
       type: z
-        .enum(["funnel", "retention", "utm", "goals", "insights", "revenue", "journey", "attribution"])
+        .enum(["attribution", "breakdown", "funnel", "goal", "heatmap", "journey", "performance", "retention", "revenue", "utm"])
         .describe("Report type to run"),
       websiteId: z.string().describe("Website UUID"),
       parameters: z
