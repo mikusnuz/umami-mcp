@@ -19,13 +19,17 @@ export function registerAccountTools(server: McpServer, client: UmamiClient) {
     {
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
-      query: z.string().optional().describe("Search query to filter websites"),
+      orderBy: z.string().optional().describe("Sort field"),
+      sortDescending: z.boolean().optional(),
+      includeTeams: z.boolean().optional().describe("Include team-accessible websites"),
     },
-    async ({ page, pageSize, query }) => {
+    async ({ page, pageSize, orderBy, sortDescending, includeTeams }) => {
       const data = await client.call("GET", "/api/me/websites", undefined, {
         page,
         pageSize,
-        query,
+        orderBy,
+        sortDescending,
+        includeTeams,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -37,13 +41,15 @@ export function registerAccountTools(server: McpServer, client: UmamiClient) {
     {
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
-      query: z.string().optional().describe("Search query to filter teams"),
+      orderBy: z.string().optional().describe("Sort field"),
+      sortDescending: z.boolean().optional(),
     },
-    async ({ page, pageSize, query }) => {
+    async ({ page, pageSize, orderBy, sortDescending }) => {
       const data = await client.call("GET", "/api/me/teams", undefined, {
         page,
         pageSize,
-        query,
+        orderBy,
+        sortDescending,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -51,10 +57,10 @@ export function registerAccountTools(server: McpServer, client: UmamiClient) {
 
   server.tool(
     "update_my_password",
-    "Update the current user's password",
+    "Update the current user's password (self-hosted Umami only; Cloud API keys cannot call this route)",
     {
       currentPassword: z.string().describe("Current password"),
-      newPassword: z.string().describe("New password"),
+      newPassword: z.string().min(8).describe("New password (minimum 8 characters)"),
     },
     async ({ currentPassword, newPassword }) => {
       await client.call("POST", "/api/me/password", {
@@ -70,19 +76,25 @@ export function registerAccountTools(server: McpServer, client: UmamiClient) {
     "Verify the current authentication token is valid",
     {},
     async () => {
-      const data = await client.call("GET", "/api/auth/verify");
+      const data = await client.call("POST", "/api/auth/verify");
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
   server.tool(
     "get_share",
-    "Get shared website data by share ID (public access, no auth required for the share itself)",
+    "Resolve a public Umami share by its slug without authentication",
     {
-      shareId: z.string().describe("The share ID of a publicly shared website"),
+      slug: z.string().describe("Public share slug"),
     },
-    async ({ shareId }) => {
-      const data = await client.call("GET", `/api/share/${shareId}`);
+    async ({ slug }) => {
+      const data = await client.call(
+        "GET",
+        `/api/share/${encodeURIComponent(slug)}`,
+        undefined,
+        undefined,
+        { auth: "none", target: "collector" },
+      );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -92,8 +104,29 @@ export function registerAccountTools(server: McpServer, client: UmamiClient) {
     "Check if the Umami server is running and healthy",
     {},
     async () => {
-      const data = await client.call("GET", "/api/heartbeat");
+      const data = await client.call(
+        "GET",
+        "/api/heartbeat",
+        undefined,
+        undefined,
+        { auth: "none", target: "collector" },
+      );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
+  );
+
+  server.tool(
+    "complete_two_factor_login",
+    "Complete a pending self-hosted Umami login after a tool reports that 2FA is required",
+    {
+      method: z.enum(["totp", "backupCode"]).describe("Verification method"),
+      code: z.string().min(1).describe("Six-digit TOTP or backup code"),
+    },
+    async ({ method, code }) => {
+      const data = await client.completeTwoFactorLogin(
+        method === "totp" ? { token: code } : { backupCode: code },
+      );
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    },
   );
 }

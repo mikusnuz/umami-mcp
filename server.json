@@ -1,25 +1,32 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.mikusnuz/umami",
-  "description": "MCP server for Umami Analytics API v2 — websites, stats, events, reports, and realtime",
+  "description": "MCP server for Umami Analytics API v3.3 — analytics, boards, links, pixels, reports, replay, and more",
   "repository": {
     "url": "https://github.com/mikusnuz/umami-mcp",
     "source": "github"
   },
-  "version": "1.2.1",
+  "version": "2.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@mikusnuz/umami-mcp",
-      "version": "1.2.1",
+      "version": "2.0.0",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
           "name": "UMAMI_URL",
-          "description": "Your Umami instance URL",
-          "isRequired": true,
+          "description": "Self-hosted Umami instance URL; optional for Cloud API keys",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "UMAMI_COLLECTOR_URL",
+          "description": "Optional collection host for send, batch, heartbeat, share, and recorder calls",
+          "isRequired": false,
           "format": "string",
           "isSecret": false
         },

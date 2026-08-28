@@ -7,6 +7,8 @@ When asked about website traffic, page views, visitor stats, or analytics report
 - Do not manually call the Umami API
 - Always use `list_websites` first to get the website ID before querying stats
 - Use date ranges in Unix timestamps (milliseconds)
+- Use `path` for URL filters/page metrics and `hostname` for host metrics
+- Use only `minute`, `hour`, `day`, `month`, or `year` as time units
 - For real-time data, use `get_realtime` or `get_active_visitors`
 
 ## MCP Config

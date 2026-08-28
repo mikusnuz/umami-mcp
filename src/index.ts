@@ -13,13 +13,14 @@ import { registerUserTools } from "./tools/users.js";
 import { registerTeamTools } from "./tools/teams.js";
 import { registerRealtimeTools } from "./tools/realtime.js";
 import { registerAccountTools } from "./tools/account.js";
+import { registerV3Tools } from "./tools/v3.js";
 import { registerWebsiteResources } from "./resources/websites.js";
 import { registerAccountResources } from "./resources/account.js";
 import { registerPrompts } from "./prompts/index.js";
 
 const server = new McpServer({
   name: "umami-mcp",
-  version: "1.2.0",
+  version: "2.0.0",
 });
 
 const config = loadConfig();
@@ -35,6 +36,7 @@ registerUserTools(server, client);
 registerTeamTools(server, client);
 registerRealtimeTools(server, client);
 registerAccountTools(server, client);
+registerV3Tools(server, client);
 
 // Register resources
 registerWebsiteResources(server, client);
@@ -58,11 +60,12 @@ main().catch((err) => {
 export function createSandboxServer() {
   const sandbox = new McpServer({
     name: "umami-mcp",
-    version: "1.2.0",
+    version: "2.0.0",
   });
 
   const mockConfig: UmamiConfig = {
     baseUrl: "https://example.com",
+    collectorUrl: "https://example.com",
     username: "",
     password: "",
     apiKey: "",
@@ -78,6 +81,7 @@ export function createSandboxServer() {
   registerTeamTools(sandbox, mockClient);
   registerRealtimeTools(sandbox, mockClient);
   registerAccountTools(sandbox, mockClient);
+  registerV3Tools(sandbox, mockClient);
   registerWebsiteResources(sandbox, mockClient);
   registerAccountResources(sandbox, mockClient);
   registerPrompts(sandbox);

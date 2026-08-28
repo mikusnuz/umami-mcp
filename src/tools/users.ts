@@ -9,15 +9,17 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
     {
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page (default 10)"),
-      query: z.string().optional().describe("Search query to filter users"),
+      search: z.string().optional().describe("Search query to filter users"),
       orderBy: z.string().optional().describe("Field to order by (e.g. 'username', 'createdAt')"),
+      sortDescending: z.boolean().optional(),
     },
-    async ({ page, pageSize, query, orderBy }) => {
-      const data = await client.call("GET", "/api/users", undefined, {
+    async ({ page, pageSize, search, orderBy, sortDescending }) => {
+      const data = await client.call("GET", "/api/admin/users", undefined, {
         page,
         pageSize,
-        query,
+        search,
         orderBy,
+        sortDescending,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -27,13 +29,13 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
     "create_user",
     "Create a new user (admin only)",
     {
-      username: z.string().describe("Username for the new user"),
-      password: z.string().describe("Password for the new user"),
-      role: z.string().optional().describe("User role: 'admin' or 'user' (default: 'user')"),
+      username: z.string().max(255).describe("Username for the new user"),
+      password: z.string().min(8).max(255).describe("Password for the new user"),
+      role: z.enum(["admin", "user", "view-only"]).describe("User role"),
     },
     async ({ username, password, role }) => {
       const body: Record<string, unknown> = { username, password };
-      if (role) body.role = role;
+      body.role = role;
       const data = await client.call("POST", "/api/users", body);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -43,7 +45,7 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
     "get_user",
     "Get details of a specific user (admin only)",
     {
-      userId: z.string().describe("User UUID"),
+      userId: z.string().uuid().describe("User UUID"),
     },
     async ({ userId }) => {
       const data = await client.call("GET", `/api/users/${userId}`);
@@ -55,10 +57,10 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
     "update_user",
     "Update a user's username, password, or role (admin only)",
     {
-      userId: z.string().describe("User UUID"),
-      username: z.string().optional().describe("New username"),
-      password: z.string().optional().describe("New password"),
-      role: z.string().optional().describe("New role: 'admin' or 'user'"),
+      userId: z.string().uuid().describe("User UUID"),
+      username: z.string().max(255).optional().describe("New username"),
+      password: z.string().min(8).max(255).optional().describe("New password"),
+      role: z.enum(["admin", "user", "view-only"]).optional().describe("New role"),
     },
     async ({ userId, username, password, role }) => {
       const body: Record<string, unknown> = {};
@@ -74,7 +76,7 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
     "delete_user",
     "Delete a user (admin only)",
     {
-      userId: z.string().describe("User UUID to delete"),
+      userId: z.string().uuid().describe("User UUID to delete"),
     },
     async ({ userId }) => {
       await client.call("DELETE", `/api/users/${userId}`);
@@ -86,33 +88,22 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
     "get_user_websites",
     "Get the list of websites a user has access to (admin only)",
     {
-      userId: z.string().describe("User UUID"),
+      userId: z.string().uuid().describe("User UUID"),
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
-      query: z.string().optional().describe("Search query to filter websites"),
+      search: z.string().optional().describe("Search query to filter websites"),
+      orderBy: z.string().optional(),
+      sortDescending: z.boolean().optional(),
+      includeTeams: z.boolean().optional(),
     },
-    async ({ userId, page, pageSize, query }) => {
+    async ({ userId, page, pageSize, search, orderBy, sortDescending, includeTeams }) => {
       const data = await client.call("GET", `/api/users/${userId}/websites`, undefined, {
         page,
         pageSize,
-        query,
-      });
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-    }
-  );
-
-  server.tool(
-    "get_user_usage",
-    "Get usage statistics for a specific user (admin only)",
-    {
-      userId: z.string().describe("User UUID"),
-      startAt: z.number().optional().describe("Start timestamp in milliseconds"),
-      endAt: z.number().optional().describe("End timestamp in milliseconds"),
-    },
-    async ({ userId, startAt, endAt }) => {
-      const data = await client.call("GET", `/api/users/${userId}/usage`, undefined, {
-        startAt,
-        endAt,
+        search,
+        orderBy,
+        sortDescending,
+        includeTeams,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -122,16 +113,18 @@ export function registerUserTools(server: McpServer, client: UmamiClient) {
     "get_user_teams",
     "Get the list of teams a user belongs to (admin only)",
     {
-      userId: z.string().describe("User UUID"),
+      userId: z.string().uuid().describe("User UUID"),
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
-      query: z.string().optional().describe("Search query to filter teams"),
+      orderBy: z.string().optional(),
+      sortDescending: z.boolean().optional(),
     },
-    async ({ userId, page, pageSize, query }) => {
+    async ({ userId, page, pageSize, orderBy, sortDescending }) => {
       const data = await client.call("GET", `/api/users/${userId}/teams`, undefined, {
         page,
         pageSize,
-        query,
+        orderBy,
+        sortDescending,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }

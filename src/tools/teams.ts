@@ -9,15 +9,15 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     {
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page (default 10)"),
-      query: z.string().optional().describe("Search query to filter teams"),
       orderBy: z.string().optional().describe("Field to order by (e.g. 'name', 'createdAt')"),
+      sortDescending: z.boolean().optional(),
     },
-    async ({ page, pageSize, query, orderBy }) => {
+    async ({ page, pageSize, orderBy, sortDescending }) => {
       const data = await client.call("GET", "/api/teams", undefined, {
         page,
         pageSize,
-        query,
         orderBy,
+        sortDescending,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -27,7 +27,7 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "create_team",
     "Create a new team",
     {
-      name: z.string().describe("Team name"),
+      name: z.string().max(50).describe("Team name"),
     },
     async ({ name }) => {
       const data = await client.call("POST", "/api/teams", { name });
@@ -39,7 +39,7 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "get_team",
     "Get details of a specific team",
     {
-      teamId: z.string().describe("Team UUID"),
+      teamId: z.string().uuid().describe("Team UUID"),
     },
     async ({ teamId }) => {
       const data = await client.call("GET", `/api/teams/${teamId}`);
@@ -49,13 +49,14 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
 
   server.tool(
     "update_team",
-    "Update a team's name",
+    "Update a team's name or access code",
     {
-      teamId: z.string().describe("Team UUID"),
-      name: z.string().describe("New team name"),
+      teamId: z.string().uuid().describe("Team UUID"),
+      name: z.string().max(50).optional().describe("New team name"),
+      accessCode: z.string().max(50).optional().describe("New access code"),
     },
-    async ({ teamId, name }) => {
-      const data = await client.call("POST", `/api/teams/${teamId}`, { name });
+    async ({ teamId, name, accessCode }) => {
+      const data = await client.call("POST", `/api/teams/${teamId}`, { name, accessCode });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -64,7 +65,7 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "delete_team",
     "Delete a team",
     {
-      teamId: z.string().describe("Team UUID to delete"),
+      teamId: z.string().uuid().describe("Team UUID to delete"),
     },
     async ({ teamId }) => {
       await client.call("DELETE", `/api/teams/${teamId}`);
@@ -88,16 +89,16 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "list_team_users",
     "List all members of a team",
     {
-      teamId: z.string().describe("Team UUID"),
+      teamId: z.string().uuid().describe("Team UUID"),
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
-      query: z.string().optional().describe("Search query to filter members"),
+      search: z.string().optional().describe("Search query to filter members"),
     },
-    async ({ teamId, page, pageSize, query }) => {
+    async ({ teamId, page, pageSize, search }) => {
       const data = await client.call("GET", `/api/teams/${teamId}/users`, undefined, {
         page,
         pageSize,
-        query,
+        search,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -107,9 +108,9 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "add_team_user",
     "Add a user to a team",
     {
-      teamId: z.string().describe("Team UUID"),
-      userId: z.string().describe("User UUID to add"),
-      role: z.string().describe("Role in the team: 'team-owner' or 'team-member'"),
+      teamId: z.string().uuid().describe("Team UUID"),
+      userId: z.string().uuid().describe("User UUID to add"),
+      role: z.enum(["team-member", "team-view-only", "team-manager"]).describe("Role in the team"),
     },
     async ({ teamId, userId, role }) => {
       const data = await client.call("POST", `/api/teams/${teamId}/users`, { userId, role });
@@ -121,9 +122,9 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "update_team_user",
     "Update a team member's role",
     {
-      teamId: z.string().describe("Team UUID"),
-      userId: z.string().describe("User UUID"),
-      role: z.string().describe("New role: 'team-owner' or 'team-member'"),
+      teamId: z.string().uuid().describe("Team UUID"),
+      userId: z.string().uuid().describe("User UUID"),
+      role: z.enum(["team-member", "team-view-only", "team-manager"]).describe("New team role"),
     },
     async ({ teamId, userId, role }) => {
       const data = await client.call("POST", `/api/teams/${teamId}/users/${userId}`, { role });
@@ -135,8 +136,8 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "get_team_user",
     "Get details of a specific team member",
     {
-      teamId: z.string().describe("Team UUID"),
-      userId: z.string().describe("User UUID"),
+      teamId: z.string().uuid().describe("Team UUID"),
+      userId: z.string().uuid().describe("User UUID"),
     },
     async ({ teamId, userId }) => {
       const data = await client.call("GET", `/api/teams/${teamId}/users/${userId}`);
@@ -148,8 +149,8 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "remove_team_user",
     "Remove a user from a team",
     {
-      teamId: z.string().describe("Team UUID"),
-      userId: z.string().describe("User UUID to remove"),
+      teamId: z.string().uuid().describe("Team UUID"),
+      userId: z.string().uuid().describe("User UUID to remove"),
     },
     async ({ teamId, userId }) => {
       await client.call("DELETE", `/api/teams/${teamId}/users/${userId}`);
@@ -161,44 +162,23 @@ export function registerTeamTools(server: McpServer, client: UmamiClient) {
     "list_team_websites",
     "List all websites that belong to a team",
     {
-      teamId: z.string().describe("Team UUID"),
+      teamId: z.string().uuid().describe("Team UUID"),
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
-      query: z.string().optional().describe("Search query to filter websites"),
+      search: z.string().optional().describe("Search query to filter websites"),
+      orderBy: z.string().optional(),
+      sortDescending: z.boolean().optional(),
     },
-    async ({ teamId, page, pageSize, query }) => {
+    async ({ teamId, page, pageSize, search, orderBy, sortDescending }) => {
       const data = await client.call("GET", `/api/teams/${teamId}/websites`, undefined, {
         page,
         pageSize,
-        query,
+        search,
+        orderBy,
+        sortDescending,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool(
-    "add_team_website",
-    "Add a website to a team",
-    {
-      teamId: z.string().describe("Team UUID"),
-      websiteId: z.string().describe("Website UUID to add to the team"),
-    },
-    async ({ teamId, websiteId }) => {
-      const data = await client.call("POST", `/api/teams/${teamId}/websites`, { websiteId });
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-    }
-  );
-
-  server.tool(
-    "remove_team_website",
-    "Remove a website from a team",
-    {
-      teamId: z.string().describe("Team UUID"),
-      websiteId: z.string().describe("Website UUID to remove from the team"),
-    },
-    async ({ teamId, websiteId }) => {
-      await client.call("DELETE", `/api/teams/${teamId}/websites/${websiteId}`);
-      return { content: [{ type: "text", text: `Website ${websiteId} removed from team ${teamId}.` }] };
-    }
-  );
 }

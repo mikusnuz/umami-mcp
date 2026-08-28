@@ -7,6 +7,15 @@ const dateRange = {
   endAt: z.number().describe("End timestamp in milliseconds"),
 };
 
+const unit = z
+  .enum(["minute", "hour", "day", "month", "year"])
+  .describe("Time grouping unit supported by Umami v3");
+
+const filters = z
+  .record(z.union([z.string(), z.number(), z.boolean()]))
+  .optional()
+  .describe("Additional Umami v3 filters such as country, device, browser, tag, UTM fields, segment, or cohort");
+
 export function registerStatsTools(server: McpServer, client: UmamiClient) {
   server.tool(
     "get_stats",
@@ -14,15 +23,23 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
     {
       websiteId: z.string().describe("Website UUID"),
       ...dateRange,
-      url: z.string().optional().describe("Filter by URL path"),
+      path: z.string().optional().describe("Filter by URL path"),
       referrer: z.string().optional().describe("Filter by referrer"),
+      event: z.string().optional().describe("Filter by event name"),
+      hostname: z.string().optional().describe("Filter by hostname"),
+      segment: z.string().uuid().optional().describe("Saved segment UUID"),
+      filters,
     },
-    async ({ websiteId, startAt, endAt, url, referrer }) => {
+    async ({ websiteId, startAt, endAt, path, referrer, event, hostname, segment, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/stats`, undefined, {
+        ...filters,
         startAt,
         endAt,
-        url,
+        path,
         referrer,
+        event,
+        hostname,
+        segment,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -34,18 +51,20 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
     {
       websiteId: z.string().describe("Website UUID"),
       ...dateRange,
-      unit: z.enum(["hour", "day", "week", "month", "year"]).describe("Time grouping unit"),
+      unit: unit.optional(),
       timezone: z.string().optional().describe("Timezone (e.g. 'Asia/Seoul')"),
-      url: z.string().optional().describe("Filter by URL path"),
+      path: z.string().optional().describe("Filter by URL path"),
       referrer: z.string().optional().describe("Filter by referrer"),
+      filters,
     },
-    async ({ websiteId, startAt, endAt, unit, timezone, url, referrer }) => {
+    async ({ websiteId, startAt, endAt, unit, timezone, path, referrer, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/pageviews`, undefined, {
+        ...filters,
         startAt,
         endAt,
         unit,
         timezone,
-        url,
+        path,
         referrer,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
@@ -60,34 +79,52 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       ...dateRange,
       type: z
         .enum([
-          "url",
+          "path",
+          "fullPath",
+          "entry",
+          "exit",
           "referrer",
+          "domain",
           "browser",
           "os",
           "device",
+          "screen",
           "country",
           "region",
           "city",
           "language",
+          "distinctId",
           "event",
           "query",
           "title",
-          "host",
+          "hostname",
           "tag",
+          "utmSource",
+          "utmMedium",
+          "utmCampaign",
+          "utmContent",
+          "utmTerm",
+          "channel",
         ])
         .describe("Metric type to aggregate"),
-      url: z.string().optional().describe("Filter by URL path"),
+      path: z.string().optional().describe("Filter by URL path"),
       referrer: z.string().optional().describe("Filter by referrer"),
       limit: z.number().optional().describe("Max results to return (default 500)"),
+      offset: z.number().int().nonnegative().optional(),
+      search: z.string().optional().describe("Search metric values"),
+      filters,
     },
-    async ({ websiteId, startAt, endAt, type, url, referrer, limit }) => {
+    async ({ websiteId, startAt, endAt, type, path, referrer, limit, offset, search, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/metrics`, undefined, {
+        ...filters,
         startAt,
         endAt,
         type,
-        url,
+        path,
         referrer,
         limit,
+        offset,
+        search,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -95,21 +132,29 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
 
   server.tool(
     "get_events",
-    "Get event data for a website over time",
+    "List event rows for a website with current Umami v3 filters and pagination",
     {
       websiteId: z.string().describe("Website UUID"),
       ...dateRange,
-      unit: z.enum(["hour", "day", "week", "month", "year"]).describe("Time grouping unit"),
-      timezone: z.string().optional().describe("Timezone (e.g. 'Asia/Seoul')"),
-      url: z.string().optional().describe("Filter by URL path"),
+      path: z.string().optional().describe("Filter by URL path"),
+      event: z.string().optional().describe("Filter by event name"),
+      search: z.string().optional().describe("Free-text search"),
+      page: z.number().int().positive().optional(),
+      pageSize: z.number().int().positive().optional(),
+      maxResults: z.number().int().positive().optional(),
+      filters,
     },
-    async ({ websiteId, startAt, endAt, unit, timezone, url }) => {
+    async ({ websiteId, startAt, endAt, path, event, search, page, pageSize, maxResults, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/events`, undefined, {
+        ...filters,
         startAt,
         endAt,
-        unit,
-        timezone,
-        url,
+        path,
+        event,
+        search,
+        page,
+        pageSize,
+        maxResults,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -121,19 +166,27 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
     {
       websiteId: z.string().describe("Website UUID"),
       ...dateRange,
-      query: z.string().optional().describe("Search query"),
+      search: z.string().optional().describe("Free-text session search"),
+      query: z.string().optional().describe("Filter by URL query string"),
+      path: z.string().optional().describe("Filter by URL path"),
+      distinctId: z.string().optional().describe("Filter by distinct ID"),
       page: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
-      orderBy: z.string().optional().describe("Field to order by"),
+      maxResults: z.number().int().positive().optional(),
+      filters,
     },
-    async ({ websiteId, startAt, endAt, query, page, pageSize, orderBy }) => {
+    async ({ websiteId, startAt, endAt, search, query, path, distinctId, page, pageSize, maxResults, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/sessions`, undefined, {
+        ...filters,
         startAt,
         endAt,
+        search,
         query,
+        path,
+        distinctId,
         page,
         pageSize,
-        orderBy,
+        maxResults,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -157,19 +210,23 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
     {
       websiteId: z.string().describe("Website UUID"),
       ...dateRange,
-      unit: z.enum(["hour", "day", "week", "month", "year"]).describe("Time grouping unit"),
-      timezone: z.string().optional().describe("Timezone (e.g. 'Asia/Seoul')"),
-      url: z.string().optional().describe("Filter by URL path"),
-      eventName: z.string().optional().describe("Filter by event name"),
+      unit: unit.optional(),
+      timezone: z.string().describe("IANA timezone (e.g. 'Asia/Seoul')"),
+      path: z.string().optional().describe("Filter by URL path"),
+      event: z.string().optional().describe("Filter by event name"),
+      limit: z.number().int().positive().optional(),
+      filters,
     },
-    async ({ websiteId, startAt, endAt, unit, timezone, url, eventName }) => {
+    async ({ websiteId, startAt, endAt, unit, timezone, path, event, limit, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/events/series`, undefined, {
+        ...filters,
         startAt,
         endAt,
         unit,
         timezone,
-        url,
-        eventName,
+        path,
+        event,
+        limit,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -181,14 +238,16 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
     {
       websiteId: z.string().describe("Website UUID"),
       ...dateRange,
-      url: z.string().optional().describe("Filter by URL path"),
+      path: z.string().optional().describe("Filter by URL path"),
       referrer: z.string().optional().describe("Filter by referrer"),
+      filters,
     },
-    async ({ websiteId, startAt, endAt, url, referrer }) => {
+    async ({ websiteId, startAt, endAt, path, referrer, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/sessions/stats`, undefined, {
+        ...filters,
         startAt,
         endAt,
-        url,
+        path,
         referrer,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
@@ -201,11 +260,15 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
     {
       websiteId: z.string().describe("Website UUID"),
       ...dateRange,
+      timezone: z.string().describe("IANA timezone (e.g. 'Asia/Seoul')"),
+      filters,
     },
-    async ({ websiteId, startAt, endAt }) => {
+    async ({ websiteId, startAt, endAt, timezone, filters }) => {
       const data = await client.call("GET", `/api/websites/${websiteId}/sessions/weekly`, undefined, {
+        ...filters,
         startAt,
         endAt,
+        timezone,
       });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }

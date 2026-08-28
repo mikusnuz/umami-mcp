@@ -2,49 +2,25 @@
 
 # umami-mcp
 
-[![npm version](https://img.shields.io/npm/v/@mikusnuz/umami-mcp)](https://www.npmjs.com/package/@mikusnuz/umami-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![MCP Badge](https://lobehub.com/badge/mcp/mikusnuz-umami-mcp)](https://lobehub.com/mcp/mikusnuz-umami-mcp)
+현재 **Umami Analytics v3.3 API**용 Model Context Protocol 서버입니다.
+셀프 호스팅 아이디/비밀번호 인증과 Umami Cloud API 키를 지원하며, 분석과
+수집 API뿐 아니라 boards, links, pixels, segments, session replay, shares,
+export, performance, revenue 같은 v3 기능군을 제공합니다.
 
-[Umami Analytics](https://umami.is) API v2를 전체 지원하는 **Model Context Protocol (MCP)** 서버입니다.
-
-기존 Umami MCP 구현체(읽기 전용, 도구 5개 이하)와 달리, 이 서버는 **66개 도구**, **2개 리소스**, **2개 프롬프트**를 제공하여 웹사이트 CRUD, 통계, 세션, 이벤트, 이벤트 데이터, 세션 데이터, 리포트, 유저/팀 관리, 팀-웹사이트 관리, 계정 관리, 배치 이벤트, 실시간 데이터 등 Umami API 전체를 커버합니다.
-
-## 주요 기능
-
-- **66개 도구** — 웹사이트 전체 CRUD, 상세 분석, 세션 추적, 이벤트 전송 및 이벤트 데이터 조회, 리포트 관리(어트리뷰션 포함), 유저/팀 관리, 팀-웹사이트 관리, 계정 관리, 배치 이벤트, 실시간 모니터링
-- **2개 리소스** — 웹사이트 목록 및 계정 정보 빠른 조회
-- **2개 프롬프트** — 사전 구성된 분석 워크플로 (사이트 개요, 트래픽 비교)
-- **이중 인증** — 셀프 호스팅(아이디/비밀번호 → JWT) 및 Umami Cloud(API 키) 지원
-- **지연 설정** — 자격 증명 없이 서버 시작 가능; 인증은 첫 API 호출 시 확인
-- **의존성 없음** — 네이티브 `fetch` 사용, 외부 HTTP 라이브러리 불필요
+문서화되지 않은 사설 라우트까지 전부 지원한다고 주장하지 않습니다. 공개
+문서와 Umami v3.3.1 서버 계약을 기준으로 도구를 관리합니다.
 
 ## 설치
 
 ```bash
 npm install -g @mikusnuz/umami-mcp
-```
-
-또는 `npx`로 바로 실행:
-
-```bash
-npx @mikusnuz/umami-mcp
+# 또는
+npx -y @mikusnuz/umami-mcp
 ```
 
 ## 설정
 
-### 환경 변수
-
-| 변수 | 필수 여부 | 설명 |
-|------|-----------|------|
-| `UMAMI_URL` | 필수 | Umami 인스턴스 URL (예: `https://analytics.example.com`) |
-| `UMAMI_USERNAME` | 셀프 호스팅 시 | 로그인 사용자명 |
-| `UMAMI_PASSWORD` | 셀프 호스팅 시 | 로그인 비밀번호 |
-| `UMAMI_API_KEY` | Umami Cloud 시 | Umami Cloud 대시보드의 API 키 |
-
-### Claude Desktop
-
-`claude_desktop_config.json`에 다음을 추가합니다.
+### 셀프 호스팅
 
 ```json
 {
@@ -62,179 +38,109 @@ npx @mikusnuz/umami-mcp
 }
 ```
 
-### Claude Code
+`UMAMI_URL`에는 인스턴스 주소를 지정합니다. 끝의 `/api`는 있어도 되고 없어도
+됩니다.
 
-```bash
-claude mcp add umami -- npx -y @mikusnuz/umami-mcp
+### Umami Cloud
 
-# 환경 변수 설정
-export UMAMI_URL="https://analytics.example.com"
-export UMAMI_USERNAME="admin"
-export UMAMI_PASSWORD="your-password"
+```json
+{
+  "mcpServers": {
+    "umami": {
+      "command": "npx",
+      "args": ["-y", "@mikusnuz/umami-mcp"],
+      "env": {
+        "UMAMI_API_KEY": "your-cloud-api-key"
+      }
+    }
+  }
+}
 ```
 
-## 도구 (66개)
+Cloud 관리 API는 기본적으로 `https://api.umami.is/v1`을 사용하고 셀프 호스팅
+형식의 `/api/...` 도구 경로를 Cloud `/v1/...` 경로로 변환합니다. 특정 리전이
+필요하면 `UMAMI_URL`을 `https://api.umami.is/v1/us` 또는
+`https://api.umami.is/v1/eu`로 지정하세요.
 
-### 웹사이트 (9개)
+| 환경 변수 | 필요한 경우 | 설명 |
+|---|---|---|
+| `UMAMI_URL` | 셀프 호스팅 | 인스턴스 주소. Cloud에서는 생략 가능 |
+| `UMAMI_USERNAME` | 셀프 호스팅 | 로그인 아이디 |
+| `UMAMI_PASSWORD` | 셀프 호스팅 | 로그인 비밀번호 |
+| `UMAMI_API_KEY` | Cloud | Bearer API 키 |
+| `UMAMI_COLLECTOR_URL` | 선택 | 공개 수집/share/heartbeat/recorder용 별도 호스트 |
 
-| 도구 | 설명 |
-|------|------|
-| `list_websites` | 추적 중인 모든 웹사이트 목록 조회 |
-| `get_website` | ID로 웹사이트 상세 정보 조회 |
-| `create_website` | 새 웹사이트 생성 |
-| `update_website` | 웹사이트 설정 수정 |
-| `delete_website` | 웹사이트 삭제 |
-| `get_active_visitors` | 현재 활성 방문자 수 조회 |
-| `reset_website` | 웹사이트의 모든 분석 데이터 초기화 |
-| `transfer_website` | 웹사이트 소유권을 다른 유저에게 이전 |
-| `get_website_reports` | 웹사이트의 모든 리포트 조회 |
+Cloud collector 기본값은 `https://cloud.umami.is`이고, 셀프 호스팅에서는
+`UMAMI_URL`을 사용합니다.
 
-### 통계 및 분석 (9개)
+## 인증과 공개 라우트
 
-| 도구 | 설명 |
-|------|------|
-| `get_stats` | 요약 통계 (페이지뷰, 방문자, 이탈률 등) |
-| `get_pageviews` | 시간별 페이지뷰/세션 수 |
-| `get_metrics` | 집계 지표 (인기 페이지, 브라우저, 국가 등) |
-| `get_events` | 시간별 이벤트 데이터 |
-| `get_sessions` | 필터 조건이 있는 세션 목록 |
-| `get_daterange` | 사용 가능한 데이터 날짜 범위 |
-| `get_event_series` | 이벤트 메트릭 시계열 데이터 |
-| `get_session_stats` | 세션 요약 통계 |
-| `get_sessions_weekly` | 주간 세션 데이터 |
+관리·분석 도구는 bearer token을 전송합니다. 셀프 호스팅은 필요할 때 로그인해
+JWT를 캐시하고, Cloud는 API 키를 bearer credential로 사용합니다.
 
-### 세션 (5개)
+다음 공개 라우트에는 인증을 강제하지 않습니다.
 
-| 도구 | 설명 |
-|------|------|
-| `get_session` | 세션 상세 정보 |
-| `get_session_activity` | 세션 활동 로그 |
-| `get_session_properties` | 세션 커스텀 속성 |
-| `get_session_data_properties` | 세션 데이터 속성명 및 타입 조회 |
-| `get_session_data_values` | 세션 데이터 집계 값 조회 |
+- `send_event`, `send_identify`, `send_performance`
+- `batch_events`(원시 JSON 배열, 최대 500개)
+- `heartbeat`, `get_share`, `get_recorder_config`
 
-### 이벤트 (7개)
+셀프 호스팅 로그인에서 2FA를 요구하면 `complete_two_factor_login`에 현재 TOTP
+또는 백업 코드를 전달한 뒤 원래 도구를 다시 호출하세요. 2FA 등록·해제·정책
+도구도 제공합니다.
 
-| 도구 | 설명 |
-|------|------|
-| `send_event` | 커스텀 이벤트/페이지뷰 전송 (서버 사이드 추적) |
-| `get_event_values` | 이벤트/세션 속성 값 조회 |
-| `get_event_data_events` | 이벤트 데이터 이벤트 (커스텀 이벤트명 및 횟수) |
-| `get_event_data_fields` | 이벤트 데이터 필드 (속성 키 및 타입) |
-| `get_event_data_values` | 이벤트 데이터 값 (속성별 집계 횟수) |
-| `get_event_data_stats` | 이벤트 데이터 통계 요약 |
-| `batch_events` | 여러 이벤트를 단일 배치로 전송 |
+Cloud API 키는 `/me/password`, `/users`, `/users/*`를 지원하지 않습니다. 해당
+도구는 셀프 호스팅 전용입니다.
 
-### 리포트 (6개)
+## 주요 도구군
 
-| 도구 | 설명 |
-|------|------|
-| `list_reports` | 저장된 리포트 목록 |
-| `get_report` | 리포트 상세 정보 |
-| `create_report` | 리포트 생성 및 저장 |
-| `update_report` | 기존 리포트 수정 |
-| `delete_report` | 저장된 리포트 삭제 |
-| `run_report` | 리포트 실행 (funnel, retention, utm, goals, insights, revenue, journey, attribution) |
+| 영역 | 지원 내용 |
+|---|---|
+| 웹사이트·분석 | 웹사이트 CRUD, stats, pageviews, metrics, events, sessions, realtime |
+| 수집 | 페이지뷰/이벤트, identify, Core Web Vitals, batch, link/pixel 이벤트 |
+| 보고서 | 저장 보고서 CRUD와 attribution, breakdown, funnel, goal, heatmap, journey, performance, retention, revenue, UTM 실행 |
+| v3 엔터티 | boards, links, pixels, segments/cohorts |
+| Replay | recorder 설정, replay 목록/상세, 저장 replay, 세션별 replay |
+| 공유·내보내기 | 공개 share, 관리 share, CSV ZIP export |
+| Revenue | stats, chart, metrics, sessions |
+| 관리 | 현재 users/teams 라우트, 웹사이트의 user/team 이전, 2FA 정책 |
 
-### 유저 (8개, 관리자 전용)
+전체 도구명과 입력 스키마는 MCP `tools/list`에서 확인할 수 있습니다.
 
-| 도구 | 설명 |
-|------|------|
-| `list_users` | 전체 유저 목록 조회 |
-| `create_user` | 유저 생성 (사용자명, 비밀번호, 역할) |
-| `get_user` | 유저 상세 정보 조회 |
-| `update_user` | 유저 수정 (사용자명, 비밀번호 또는 역할) |
-| `delete_user` | 유저 삭제 |
-| `get_user_websites` | 유저가 접근 가능한 웹사이트 목록 |
-| `get_user_usage` | 유저 사용량 통계 |
-| `get_user_teams` | 유저가 속한 팀 목록 |
+## v3에서 중요한 변경점
 
-### 팀 (14개)
-
-| 도구 | 설명 |
-|------|------|
-| `list_teams` | 전체 팀 목록 조회 |
-| `create_team` | 팀 생성 |
-| `get_team` | 팀 상세 정보 조회 |
-| `update_team` | 팀 이름 수정 |
-| `delete_team` | 팀 삭제 |
-| `join_team` | 액세스 코드로 팀 참가 |
-| `list_team_users` | 팀 멤버 목록 |
-| `get_team_user` | 특정 팀 멤버 상세 정보 조회 |
-| `add_team_user` | 팀에 유저 추가 |
-| `update_team_user` | 팀 멤버 역할 수정 |
-| `remove_team_user` | 팀에서 유저 제거 |
-| `list_team_websites` | 팀 소속 웹사이트 목록 |
-| `add_team_website` | 팀에 웹사이트 추가 |
-| `remove_team_website` | 팀에서 웹사이트 제거 |
-
-### 계정 (7개)
-
-| 도구 | 설명 |
-|------|------|
-| `get_me` | 현재 인증된 유저 프로필 조회 |
-| `get_my_websites` | 현재 유저의 웹사이트 목록 |
-| `get_my_teams` | 현재 유저의 팀 목록 |
-| `update_my_password` | 현재 유저 비밀번호 변경 |
-| `verify_auth` | 인증 토큰 유효성 검증 |
-| `get_share` | 공유 ID로 공유 웹사이트 데이터 조회 |
-| `heartbeat` | Umami 서버 상태 확인 |
-
-### 실시간 (1개)
-
-| 도구 | 설명 |
-|------|------|
-| `get_realtime` | 최근 30분 실시간 데이터 (방문자, URL, 리퍼러, 국가, 이벤트) |
-
-## 리소스 (2개)
-
-| 리소스 | URI | 설명 |
-|--------|-----|------|
-| Websites | `umami://websites` | 추적 중인 모든 웹사이트 |
-| Account | `umami://me` | 현재 사용자 정보 |
-
-## 프롬프트 (2개)
-
-| 프롬프트 | 설명 |
-|----------|------|
-| `site_overview` | 종합 사이트 분석 (통계 + 페이지뷰 + 인기 지표 + 활성 방문자) |
-| `traffic_compare` | 두 날짜 범위 간 트래픽 비교 |
-
-## 사용 예시
-
-### 웹사이트 통계 조회
-```
-Use get_stats to show me the last 7 days of analytics for my main website.
-```
-
-### 기간 비교
-```
-Use the traffic_compare prompt to compare last week vs this week for website abc-123.
-```
-
-### 서버 사이드 이벤트 전송
-```
-Use send_event to track a "signup" event on my website with data { plan: "pro" }.
-```
-
-### 배치 이벤트 전송
-```
-Use batch_events to send 3 pageview events for different pages on my website.
-```
-
-### 서버 상태 확인
-```
-Use heartbeat to check if the Umami server is running.
-```
+- 페이지뷰는 이름 없는 `{ "type": "event" }`로 보냅니다. 예전 `pageview`
+  타입은 유효하지 않습니다.
+- `/api/batch` 본문은 `{ "events": [...] }`가 아니라 이벤트 객체의 원시
+  배열입니다. 도구는 Umami의 `processed`, `errors`, 항목별 `details`를
+  그대로 반환하며 부분 실패가 있으면 MCP 오류 결과로 표시합니다.
+- Umami 요구사항에 맞춰 수집 요청에는 안정적인 비봇 `User-Agent` 헤더를
+  설정합니다. `send_event`와 배치 항목에는 방문자의 `userAgent` 및 신뢰할
+  수 있는 서버 측 `ip`도 전달할 수 있습니다.
+- URL 필터/페이지 지표는 `path`, 호스트 지표는 `hostname`을 사용합니다.
+- 시간 단위는 `minute`, `hour`, `day`, `month`, `year`입니다.
+- `get_event_series`, `get_sessions_weekly`에는 IANA timezone이 필수입니다.
+- `list_reports`에는 `websiteId`가 필요하고, 보고서 실행 본문은
+  `{ websiteId, type, filters, parameters }`입니다.
+- 팀 웹사이트 소속은 `transfer_website`로 변경합니다. 삭제된 팀-웹사이트
+  POST/DELETE 라우트는 노출하지 않습니다.
 
 ## 개발
 
 ```bash
-git clone https://github.com/mikusnuz/umami-mcp.git
-cd umami-mcp
 npm install
-npm run build
+npm test
 ```
+
+## 공식 문서
+
+- [Umami API 개요](https://docs.umami.is/docs/api)
+- [인증](https://docs.umami.is/docs/api/authentication)
+- [Cloud API 키](https://docs.umami.is/docs/cloud/api-key)
+- [통계 전송](https://docs.umami.is/docs/api/sending-stats)
+- [웹사이트 통계](https://docs.umami.is/docs/api/website-stats)
+- [보고서](https://docs.umami.is/docs/api/reports)
+- [Cloud/API 변경 기록](https://docs.umami.is/docs/cloud/changelog)
+- [Umami v3.3.1 서버 소스](https://github.com/umami-software/umami/tree/v3.3.1)
 
 ## 라이선스
 
