@@ -1,8 +1,8 @@
 {
   "name": "@mikusnuz/umami-mcp",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "mcpName": "io.github.mikusnuz/umami",
-  "description": "MCP server for the Umami Analytics v3.3 API",
+  "description": "MCP server for the Umami Analytics v3 API",
   "type": "module",
   "bin": {
     "umami-mcp": "dist/index.js"
@@ -41,7 +41,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {

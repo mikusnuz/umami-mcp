@@ -2,19 +2,20 @@
 
 # umami-mcp
 
-Model Context Protocol server for the current **Umami Analytics v3.3 API**.
-It supports self-hosted username/password authentication and Umami Cloud API
-keys, and exposes analytics, collection, administration, and newer v3 feature
+Model Context Protocol server for the **Umami Analytics v3 API**.
+It supports self-hosted username/password or API-key authentication and Umami
+Cloud API keys, and exposes analytics, collection, administration, and v3 feature
 families such as boards, links, pixels, segments, session replay, shares,
 exports, performance, and revenue.
 
 This version intentionally does not claim every private Umami route. Its tools
-track the documented API and the public v3.3.1 server contracts.
+track the documented API, including Umami 3.4 API-key authentication. Report
+tools use the legacy report contracts that Umami 3.4 continues to support.
 
 ## Requirements
 
 - Node.js 18 or newer
-- Umami v3.3-compatible self-hosted instance, or an Umami Cloud API key
+- Umami v3.3-compatible self-hosted instance (3.4+ for API keys), or Umami Cloud
 
 ## Installation
 
@@ -51,6 +52,10 @@ npx -y @mikusnuz/umami-mcp
 `UMAMI_URL` is the instance origin. A trailing `/api` is accepted, but is not
 required.
 
+On Umami 3.4+, create an API key under Settings → API keys and replace
+`UMAMI_USERNAME` and `UMAMI_PASSWORD` with `UMAMI_API_KEY`. Set
+`UMAMI_MODE` to `self-hosted` to select the deployment mode explicitly.
+
 ### Umami Cloud
 
 ```json
@@ -71,25 +76,29 @@ Cloud management calls default to `https://api.umami.is/v1`; tool paths are
 translated from self-hosted `/api/...` paths to Cloud `/v1/...` paths. Set
 `UMAMI_URL` to `https://api.umami.is/v1/us` or
 `https://api.umami.is/v1/eu` when an explicit Cloud region is required.
+For a Cloud API proxy on another hostname, also set `UMAMI_MODE` to `cloud`.
 
 ### Environment variables
 
 | Variable | When required | Description |
 |---|---|---|
+| `UMAMI_MODE` | Optional | `self-hosted` or `cloud`; auto-detected when omitted |
 | `UMAMI_URL` | Self-hosted | Instance origin; optional for Cloud |
-| `UMAMI_USERNAME` | Self-hosted | Login username |
-| `UMAMI_PASSWORD` | Self-hosted | Login password |
-| `UMAMI_API_KEY` | Cloud | Bearer API key |
+| `UMAMI_USERNAME` | Without a self-hosted API key | Login username |
+| `UMAMI_PASSWORD` | Without a self-hosted API key | Login password |
+| `UMAMI_API_KEY` | Cloud; optional for self-hosted 3.4+ | Bearer API key |
 | `UMAMI_COLLECTOR_URL` | Optional | Separate host for public collection/share/heartbeat/recorder routes |
 
 For Cloud, the collector defaults to `https://cloud.umami.is`. For self-hosted
 Umami it defaults to `UMAMI_URL`.
+An API key without `UMAMI_URL`, or a URL on `api.umami.is`, selects Cloud.
+Any other configured URL selects self-hosted mode, even when using an API key.
 
 ## Authentication and public routes
 
 Management and analytics tools send a bearer token. The client logs in to a
-self-hosted instance lazily and caches the returned JWT; Cloud uses the API key
-as the bearer credential.
+self-hosted instance lazily and caches the returned JWT when using a password.
+API keys are sent directly as the bearer credential on both deployment types.
 
 The public collection routes do not require credentials:
 
@@ -164,7 +173,8 @@ validates key MCP schemas.
 - [Website statistics](https://docs.umami.is/docs/api/website-stats)
 - [Reports](https://docs.umami.is/docs/api/reports)
 - [Cloud/API changelog](https://docs.umami.is/docs/cloud/changelog)
-- [Umami v3.3.1 server source](https://github.com/umami-software/umami/tree/v3.3.1)
+- [Umami v3.4.0 server source](https://github.com/umami-software/umami/tree/v3.4.0)
+- [Report API compatibility](https://github.com/umami-software/umami/blob/v3.4.0/docs/report-api-migration.md)
 
 ## License
 

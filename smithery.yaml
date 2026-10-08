@@ -4,9 +4,11 @@ startCommand:
   type: stdio
   configSchema:
     type: object
-    required:
-      - umamiUrl
     properties:
+      umamiMode:
+        type: string
+        enum: [self-hosted, cloud]
+        description: Optional deployment mode override; otherwise inferred from the URL
       umamiUrl:
         type: string
         description: Your Umami instance URL (e.g. https://analytics.example.com)
@@ -18,7 +20,10 @@ startCommand:
         description: Login password (for self-hosted)
       umamiApiKey:
         type: string
-        description: API key (for Umami Cloud)
+        description: Bearer API key for Umami Cloud or self-hosted Umami 3.4+
+      umamiCollectorUrl:
+        type: string
+        description: Optional separate collection endpoint
   commandFunction:
     |-
-    config => ({ command: 'npx', args: ['-y', '@mikusnuz/umami-mcp'], env: { UMAMI_URL: config.umamiUrl, UMAMI_USERNAME: config.umamiUsername || '', UMAMI_PASSWORD: config.umamiPassword || '', UMAMI_API_KEY: config.umamiApiKey || '' } })
+    config => ({ command: 'npx', args: ['-y', '@mikusnuz/umami-mcp'], env: { UMAMI_MODE: config.umamiMode || '', UMAMI_URL: config.umamiUrl || '', UMAMI_USERNAME: config.umamiUsername || '', UMAMI_PASSWORD: config.umamiPassword || '', UMAMI_API_KEY: config.umamiApiKey || '', UMAMI_COLLECTOR_URL: config.umamiCollectorUrl || '' } })

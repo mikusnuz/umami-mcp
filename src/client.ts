@@ -1,4 +1,4 @@
-import { UmamiConfig } from "./config.js";
+import { inferMode, UmamiConfig } from "./config.js";
 
 export type UmamiAuthPolicy = "required" | "none" | "optional";
 export type UmamiApiTarget = "api" | "collector";
@@ -37,7 +37,7 @@ export class UmamiClient {
   }
 
   get isCloud(): boolean {
-    return Boolean(this.config.apiKey);
+    return (this.config.mode ?? inferMode(this.config.baseUrl, this.config.apiKey)) === "cloud";
   }
 
   private ensureEndpoint(target: UmamiApiTarget): void {

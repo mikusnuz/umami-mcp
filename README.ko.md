@@ -2,13 +2,14 @@
 
 # umami-mcp
 
-현재 **Umami Analytics v3.3 API**용 Model Context Protocol 서버입니다.
-셀프 호스팅 아이디/비밀번호 인증과 Umami Cloud API 키를 지원하며, 분석과
+**Umami Analytics v3 API**용 Model Context Protocol 서버입니다.
+셀프 호스팅 아이디/비밀번호 또는 API 키 인증과 Umami Cloud API 키를 지원하며, 분석과
 수집 API뿐 아니라 boards, links, pixels, segments, session replay, shares,
 export, performance, revenue 같은 v3 기능군을 제공합니다.
 
 문서화되지 않은 사설 라우트까지 전부 지원한다고 주장하지 않습니다. 공개
-문서와 Umami v3.3.1 서버 계약을 기준으로 도구를 관리합니다.
+문서와 서버 계약을 기준으로 도구를 관리하며 Umami 3.4의 API 키 인증도 지원합니다.
+보고서 도구는 Umami 3.4에서 계속 지원하는 기존 보고서 계약을 사용합니다.
 
 ## 설치
 
@@ -41,6 +42,10 @@ npx -y @mikusnuz/umami-mcp
 `UMAMI_URL`에는 인스턴스 주소를 지정합니다. 끝의 `/api`는 있어도 되고 없어도
 됩니다.
 
+Umami 3.4 이상에서는 설정 → API keys에서 키를 생성하고 `UMAMI_USERNAME`과
+`UMAMI_PASSWORD` 대신 `UMAMI_API_KEY`를 지정할 수 있습니다.
+`UMAMI_MODE=self-hosted`로 배포 유형을 명시할 수도 있습니다.
+
 ### Umami Cloud
 
 ```json
@@ -61,22 +66,26 @@ Cloud 관리 API는 기본적으로 `https://api.umami.is/v1`을 사용하고 �
 형식의 `/api/...` 도구 경로를 Cloud `/v1/...` 경로로 변환합니다. 특정 리전이
 필요하면 `UMAMI_URL`을 `https://api.umami.is/v1/us` 또는
 `https://api.umami.is/v1/eu`로 지정하세요.
+다른 호스트의 Cloud API 프록시를 사용한다면 `UMAMI_MODE=cloud`도 지정하세요.
 
 | 환경 변수 | 필요한 경우 | 설명 |
 |---|---|---|
+| `UMAMI_MODE` | 선택 | `self-hosted` 또는 `cloud`. 생략하면 주소로 판단 |
 | `UMAMI_URL` | 셀프 호스팅 | 인스턴스 주소. Cloud에서는 생략 가능 |
-| `UMAMI_USERNAME` | 셀프 호스팅 | 로그인 아이디 |
-| `UMAMI_PASSWORD` | 셀프 호스팅 | 로그인 비밀번호 |
-| `UMAMI_API_KEY` | Cloud | Bearer API 키 |
+| `UMAMI_USERNAME` | 셀프 호스팅 API 키를 쓰지 않을 때 | 로그인 아이디 |
+| `UMAMI_PASSWORD` | 셀프 호스팅 API 키를 쓰지 않을 때 | 로그인 비밀번호 |
+| `UMAMI_API_KEY` | Cloud 필수; 셀프 호스팅 3.4+ 선택 | Bearer API 키 |
 | `UMAMI_COLLECTOR_URL` | 선택 | 공개 수집/share/heartbeat/recorder용 별도 호스트 |
 
 Cloud collector 기본값은 `https://cloud.umami.is`이고, 셀프 호스팅에서는
 `UMAMI_URL`을 사용합니다.
+API 키만 설정하거나 `api.umami.is` 주소를 사용하면 Cloud로 판단합니다.
+다른 주소를 지정하면 API 키 사용 여부와 관계없이 셀프 호스팅으로 판단합니다.
 
 ## 인증과 공개 라우트
 
 관리·분석 도구는 bearer token을 전송합니다. 셀프 호스팅은 필요할 때 로그인해
-JWT를 캐시하고, Cloud는 API 키를 bearer credential로 사용합니다.
+JWT를 캐시합니다. API 키를 설정하면 두 배포 유형 모두 키를 직접 전송합니다.
 
 다음 공개 라우트에는 인증을 강제하지 않습니다.
 
@@ -140,7 +149,8 @@ npm test
 - [웹사이트 통계](https://docs.umami.is/docs/api/website-stats)
 - [보고서](https://docs.umami.is/docs/api/reports)
 - [Cloud/API 변경 기록](https://docs.umami.is/docs/cloud/changelog)
-- [Umami v3.3.1 서버 소스](https://github.com/umami-software/umami/tree/v3.3.1)
+- [Umami v3.4.0 서버 소스](https://github.com/umami-software/umami/tree/v3.4.0)
+- [보고서 API 호환성](https://github.com/umami-software/umami/blob/v3.4.0/docs/report-api-migration.md)
 
 ## 라이선스
 

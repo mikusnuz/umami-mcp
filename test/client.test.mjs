@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { UmamiClient, UmamiTwoFactorRequiredError } from "../dist/client.js";
+import { loadConfig } from "../dist/config.js";
 
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -8,6 +9,57 @@ function jsonResponse(body, status = 200) {
     headers: { "content-type": "application/json" },
   });
 }
+
+test("self-hosted API keys preserve /api and keep collection on the instance", async (t) => {
+  const requests = [];
+  t.mock.method(globalThis, "fetch", async (url, init) => {
+    requests.push({ url: String(url), init });
+    return jsonResponse({ ok: true });
+  });
+  for (const baseUrl of ["https://analytics.example.com", "https://analytics.example.com/api/"]) {
+    const config = loadConfig({ UMAMI_URL: baseUrl, UMAMI_API_KEY: "self-hosted-key" });
+    const client = new UmamiClient(config);
+    assert.equal(client.isCloud, false);
+    await client.call("GET", "/api/websites");
+    await client.call("POST", "/api/send", { type: "event" }, undefined, {
+      auth: "none", target: "collector",
+    });
+  }
+  assert.deepEqual(requests.map(({ url }) => url), [
+    "https://analytics.example.com/api/websites",
+    "https://analytics.example.com/api/send",
+    "https://analytics.example.com/api/websites",
+    "https://analytics.example.com/api/send",
+  ]);
+  assert.equal(requests[0].init.headers.Authorization, "Bearer self-hosted-key");
+  assert.equal(requests[1].init.headers.Authorization, undefined);
+});
+
+test("deployment mode supports Cloud defaults, regional hosts, proxies, and explicit overrides", async (t) => {
+  const requests = [];
+  t.mock.method(globalThis, "fetch", async (url) => {
+    requests.push(String(url));
+    return jsonResponse({});
+  });
+  for (const env of [
+    { UMAMI_API_KEY: "key" },
+    { UMAMI_API_KEY: "key", UMAMI_URL: "https://api.umami.is/v1/eu" },
+    { UMAMI_API_KEY: "key", UMAMI_MODE: "cloud", UMAMI_URL: "https://proxy.example.com/v1" },
+  ]) {
+    const config = loadConfig(env);
+    assert.equal(config.mode, "cloud");
+    assert.equal(config.collectorUrl, "https://cloud.umami.is");
+    await new UmamiClient(config).call("GET", "/api/websites");
+  }
+  assert.deepEqual(requests, [
+    "https://api.umami.is/v1/websites",
+    "https://api.umami.is/v1/eu/websites",
+    "https://proxy.example.com/v1/websites",
+  ]);
+  assert.equal(loadConfig({ UMAMI_MODE: "self-hosted", UMAMI_API_KEY: "key" }).baseUrl, "");
+  assert.equal(loadConfig({ UMAMI_API_KEY: "key", UMAMI_COLLECTOR_URL: "https://collector.example.com/" }).collectorUrl, "https://collector.example.com");
+  assert.throws(() => loadConfig({ UMAMI_MODE: "invalid" }), /UMAMI_MODE/);
+});
 
 test("Cloud management calls strip /api and use Bearer API-key auth", async (t) => {
   const requests = [];

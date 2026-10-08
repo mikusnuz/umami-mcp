@@ -1,11 +1,14 @@
 # umami-mcp
 
-> MCP server aligned with the public Umami Analytics v3.3.1 contracts.
+> MCP server for Umami Analytics v3, including self-hosted API keys in 3.4+.
 
 ## Configuration
 
 Self-hosted: set UMAMI_URL, UMAMI_USERNAME, and UMAMI_PASSWORD.
+For Umami 3.4+, UMAMI_API_KEY can replace username/password on self-hosted instances.
 Cloud: set UMAMI_API_KEY; the API base defaults to https://api.umami.is/v1.
+UMAMI_MODE=self-hosted or cloud overrides URL-based deployment detection.
+Use explicit cloud mode for a Cloud proxy on a custom hostname.
 UMAMI_COLLECTOR_URL optionally overrides the public collection/share/heartbeat/recorder host.
 
 ## Contract rules
@@ -21,6 +24,7 @@ UMAMI_COLLECTOR_URL optionally overrides the public collection/share/heartbeat/r
 - Units: minute, hour, day, month, year. Do not use week.
 - get_event_series and get_sessions_weekly require an IANA timezone.
 - list_reports requires websiteId. run_report sends websiteId, type, filters, and parameters.
+- Report tools use legacy contracts retained by Umami 3.4 compatibility handlers.
 - Current report types: attribution, breakdown, funnel, goal, heatmap, journey, performance, retention, revenue, utm.
 - Move a website to a user or team with transfer_website. Removed team-website mutation endpoints are not tools.
 - A self-hosted 2FA login must be completed with complete_two_factor_login before retrying the original tool.
