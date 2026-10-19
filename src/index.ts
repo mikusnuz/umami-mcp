@@ -20,7 +20,7 @@ import { registerPrompts } from "./prompts/index.js";
 
 const server = new McpServer({
   name: "umami-mcp",
-  version: "2.0.1",
+  version: "2.1.0",
 });
 
 const config = loadConfig();
@@ -60,7 +60,7 @@ main().catch((err) => {
 export function createSandboxServer() {
   const sandbox = new McpServer({
     name: "umami-mcp",
-    version: "2.0.1",
+    version: "2.1.0",
   });
 
   const mockConfig: UmamiConfig = {

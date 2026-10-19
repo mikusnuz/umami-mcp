@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { UmamiClient } from "../client.js";
+import { mergeFilters } from "../query.js";
 
 const filtersSchema = z
   .record(z.union([z.string(), z.number(), z.boolean()]))
@@ -98,7 +99,7 @@ export function registerEventTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/values`,
         undefined,
-        { ...filters, startAt, endAt, type, search }
+        mergeFilters(filters, { startAt, endAt, type, search })
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -119,7 +120,7 @@ export function registerEventTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/event-data/events`,
         undefined,
-        { ...filters, startAt, endAt, event }
+        mergeFilters(filters, { startAt, endAt, event })
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -140,7 +141,7 @@ export function registerEventTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/event-data/fields`,
         undefined,
-        { ...filters, startAt, endAt, eventName }
+        mergeFilters(filters, { startAt, endAt, eventName })
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -160,7 +161,7 @@ export function registerEventTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/event-data/properties`,
         undefined,
-        { ...filters, startAt, endAt },
+        mergeFilters(filters, { startAt, endAt }),
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     },
@@ -199,7 +200,7 @@ export function registerEventTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/event-data/values`,
         undefined,
-        { ...filters, startAt, endAt, eventName, propertyName, dataType }
+        mergeFilters(filters, { startAt, endAt, eventName, propertyName, dataType })
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -220,7 +221,7 @@ export function registerEventTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/event-data/stats`,
         undefined,
-        { ...filters, startAt, endAt, event }
+        mergeFilters(filters, { startAt, endAt, event })
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }

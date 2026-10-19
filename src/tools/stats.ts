@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { UmamiClient } from "../client.js";
+import { mergeFilters } from "../query.js";
 
 const dateRange = {
   startAt: z.number().describe("Start timestamp in milliseconds"),
@@ -31,8 +32,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, path, referrer, event, hostname, segment, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/stats`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/stats`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         path,
@@ -40,7 +40,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
         event,
         hostname,
         segment,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -58,15 +58,14 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, unit, timezone, path, referrer, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/pageviews`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/pageviews`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         unit,
         timezone,
         path,
         referrer,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -115,8 +114,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, type, path, referrer, limit, offset, search, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/metrics`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/metrics`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         type,
@@ -125,7 +123,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
         limit,
         offset,
         search,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -145,8 +143,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, path, event, search, page, pageSize, maxResults, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/events`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/events`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         path,
@@ -155,7 +152,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
         page,
         pageSize,
         maxResults,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -176,8 +173,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, search, query, path, distinctId, page, pageSize, maxResults, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/sessions`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/sessions`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         search,
@@ -187,7 +183,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
         page,
         pageSize,
         maxResults,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -218,8 +214,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, unit, timezone, path, event, limit, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/events/series`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/events/series`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         unit,
@@ -227,7 +222,7 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
         path,
         event,
         limit,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -243,13 +238,12 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, path, referrer, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/sessions/stats`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/sessions/stats`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         path,
         referrer,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -264,12 +258,11 @@ export function registerStatsTools(server: McpServer, client: UmamiClient) {
       filters,
     },
     async ({ websiteId, startAt, endAt, timezone, filters }) => {
-      const data = await client.call("GET", `/api/websites/${websiteId}/sessions/weekly`, undefined, {
-        ...filters,
+      const data = await client.call("GET", `/api/websites/${websiteId}/sessions/weekly`, undefined, mergeFilters(filters, {
         startAt,
         endAt,
         timezone,
-      });
+      }));
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );

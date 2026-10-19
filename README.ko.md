@@ -108,6 +108,7 @@ Cloud API 키는 `/me/password`, `/users`, `/users/*`를 지원하지 않습니�
 | 수집 | 페이지뷰/이벤트, identify, Core Web Vitals, batch, link/pixel 이벤트 |
 | 보고서 | 저장 보고서 CRUD와 attribution, breakdown, funnel, goal, heatmap, journey, performance, retention, revenue, UTM 실행 |
 | v3 엔터티 | boards, links, pixels, segments/cohorts |
+| 주석 (3.4+) | `list_annotations`, `get_annotation`, `create_annotation`, `update_annotation`, `delete_annotation` |
 | Replay | recorder 설정, replay 목록/상세, 저장 replay, 세션별 replay |
 | 공유·내보내기 | 공개 share, 관리 share, CSV ZIP export |
 | Revenue | stats, chart, metrics, sessions |
@@ -126,6 +127,16 @@ Cloud API 키는 `/me/password`, `/users`, `/users/*`를 지원하지 않습니�
   설정합니다. `send_event`와 배치 항목에는 방문자의 `userAgent` 및 신뢰할
   수 있는 서버 측 `ip`도 전달할 수 있습니다.
 - URL 필터/페이지 지표는 `path`, 호스트 지표는 `hostname`을 사용합니다.
+- 같은 이름의 개별 옵션을 생략해도 `filters`에 넣은 값은 유지됩니다.
+  개별 옵션을 명시하면 그 값이 `filters`보다 우선합니다.
+- 세그먼트 생성·수정은 `filters`, `sessionPropertyFilters`, `match`,
+  `dateRange`, `action`을 지원합니다. 세션 속성 타입은 1=문자열, 2=숫자,
+  3=불리언, 4=날짜, 5=배열입니다. 코호트는 세션 속성 필터를 지원하지
+  않습니다. 중첩 객체의 알 수 없는 필드는 무시하지 않고 오류로 반환합니다.
+- 주석은 Umami 3.4 이상 및 해당 API 경로가 필요하며, 쓰기에는 웹사이트 수정
+  권한이 필요합니다. ISO 날짜/타임스탬프와 1–500자 메모를 받으며 `allDay`의
+  기본값은 `true`입니다. 수정은 세 필드를 모두 교체합니다. 기간 조회에는
+  밀리초 단위 `startAt`과 `endAt`을 함께 지정하세요. 구버전은 404를 반환할 수 있습니다.
 - 시간 단위는 `minute`, `hour`, `day`, `month`, `year`입니다.
 - `get_event_series`, `get_sessions_weekly`에는 IANA timezone이 필수입니다.
 - `list_reports`에는 `websiteId`가 필요하고, 보고서 실행 본문은

@@ -21,6 +21,9 @@ UMAMI_COLLECTOR_URL optionally overrides the public collection/share/heartbeat/r
   visitor userAgent/ip can also be supplied in event payloads.
 - Public send, batch, heartbeat, share-by-slug, and recorder-config routes do not require credentials.
 - Analytics uses path instead of the removed url filter/metric, and hostname instead of host.
+- Nested filters survive omitted named options; explicitly provided named options take precedence.
+- Segment create/update accept filters, sessionPropertyFilters (3.4+), match, dateRange and action. Unknown nested fields fail validation. Cohorts cannot use sessionPropertyFilters.
+- Annotation CRUD requires Umami 3.4+ routes: ISO date/timestamp, note (1-500 chars), allDay (default true). Updates replace all fields; list startAt/endAt must be supplied together in milliseconds.
 - Units: minute, hour, day, month, year. Do not use week.
 - get_event_series and get_sessions_weekly require an IANA timezone.
 - list_reports requires websiteId. run_report sends websiteId, type, filters, and parameters.
@@ -37,6 +40,7 @@ UMAMI_COLLECTOR_URL optionally overrides the public collection/share/heartbeat/r
 - Reports: saved report CRUD and all current documented report types
 - Boards, tracked links, tracking pixels
 - Segments and cohorts
+- Website annotations: list/get/create/update/delete (3.4+)
 - Session replay and recorder configuration
 - Managed/public shares and website CSV ZIP export
 - Revenue stats, charts, metrics, sessions

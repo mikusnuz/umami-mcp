@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { UmamiClient } from "../client.js";
+import { mergeFilters } from "../query.js";
 
 const filtersSchema = z
   .record(z.union([z.string(), z.number(), z.boolean()]))
@@ -76,7 +77,7 @@ export function registerSessionTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/session-data/properties`,
         undefined,
-        { ...filters, startAt, endAt, propertyName }
+        mergeFilters(filters, { startAt, endAt, propertyName })
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -98,7 +99,7 @@ export function registerSessionTools(server: McpServer, client: UmamiClient) {
         "GET",
         `/api/websites/${websiteId}/session-data/values`,
         undefined,
-        { ...filters, startAt, endAt, propertyName, dataType }
+        mergeFilters(filters, { startAt, endAt, propertyName, dataType })
       );
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }

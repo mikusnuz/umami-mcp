@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { UmamiClient } from "../client.js";
+import { registerAnnotationTools } from "./annotations.js";
 
 function jsonResult(data: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
@@ -31,6 +32,7 @@ const filtersSchema = z
 const unitSchema = z.enum(["minute", "hour", "day", "month", "year"]);
 
 export function registerV3Tools(server: McpServer, client: UmamiClient) {
+  registerAnnotationTools(server, client);
   registerBoardTools(server, client);
   registerLinkPixelTools(server, client);
   registerTwoFactorTools(server, client);
@@ -327,36 +329,32 @@ function registerTwoFactorTools(server: McpServer, client: UmamiClient) {
 
 function registerSegmentTools(server: McpServer, client: UmamiClient) {
   const segmentType = z.enum(["segment", "cohort"]);
+  const operator = z.enum(["eq", "neq", "s", "ns", "c", "dnc", "re", "nre", "t", "f", "gt", "lt", "gte", "lte", "bf", "af"]);
   const segmentParameters = z.object({
     filters: z
       .array(
         z.object({
           name: z.string(),
-          operator: z.enum([
-            "eq",
-            "neq",
-            "s",
-            "ns",
-            "c",
-            "dnc",
-            "re",
-            "nre",
-            "t",
-            "f",
-            "gt",
-            "lt",
-            "gte",
-            "lte",
-            "bf",
-            "af",
-          ]),
+          operator,
           value: z.string(),
-        }),
+        }).strict(),
       )
       .optional(),
+    sessionPropertyFilters: z.array(z.object({
+      propertyName: z.string().min(1).max(500),
+      dataType: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+      operator,
+      value: z.string(),
+    }).strict()).optional().describe("Umami 3.4+ session properties; not supported for cohorts"),
     match: z.enum(["all", "any"]).optional(),
     dateRange: z.string().optional(),
-  });
+    action: z.object({ type: z.string(), value: z.string() }).strict().optional(),
+  }).strict();
+  const validateCohort = (type: string, parameters: z.infer<typeof segmentParameters>) => {
+    if (type === "cohort" && parameters.sessionPropertyFilters?.length) {
+      throw new Error("Umami does not support sessionPropertyFilters for cohorts.");
+    }
+  };
   server.tool(
     "list_segments",
     "List saved segments or cohorts for a website",
@@ -373,8 +371,10 @@ function registerSegmentTools(server: McpServer, client: UmamiClient) {
       name: z.string().max(200),
       parameters: segmentParameters,
     },
-    async ({ websiteId, ...body }) =>
-      jsonResult(await client.call("POST", `/api/websites/${websiteId}/segments`, body)),
+    async ({ websiteId, ...body }) => {
+      validateCohort(body.type, body.parameters);
+      return jsonResult(await client.call("POST", `/api/websites/${websiteId}/segments`, body));
+    },
   );
   server.tool(
     "get_segment",
@@ -391,12 +391,14 @@ function registerSegmentTools(server: McpServer, client: UmamiClient) {
       segmentId: z.string().uuid(),
       type: segmentType,
       name: z.string().max(200),
-      parameters: z.record(z.unknown()),
+      parameters: segmentParameters,
     },
-    async ({ websiteId, segmentId, ...body }) =>
-      jsonResult(
+    async ({ websiteId, segmentId, ...body }) => {
+      validateCohort(body.type, body.parameters);
+      return jsonResult(
         await client.call("POST", `/api/websites/${websiteId}/segments/${segmentId}`, body),
-      ),
+      );
+    },
   );
   server.tool(
     "delete_segment",

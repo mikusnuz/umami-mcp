@@ -15,7 +15,7 @@ tools use the legacy report contracts that Umami 3.4 continues to support.
 ## Requirements
 
 - Node.js 18 or newer
-- Umami v3.3-compatible self-hosted instance (3.4+ for API keys), or Umami Cloud
+- Umami v3.3-compatible self-hosted instance (3.4+ for API keys, session-property segments and annotations), or Umami Cloud with the corresponding routes enabled
 
 ## Installation
 
@@ -125,6 +125,7 @@ API key. Those tools are for self-hosted instances.
 | Boards | list, CRUD, clone, and team boards |
 | Links and pixels | list, CRUD, charts, and collection events |
 | Segments | segment/cohort list and CRUD |
+| Annotations (3.4+) | `list_annotations`, `get_annotation`, `create_annotation`, `update_annotation`, `delete_annotation` |
 | Replay | recorder config, replay list/detail, saved replays, session replays |
 | Shares and export | public share resolution, managed website shares, update/delete, CSV ZIP export |
 | Revenue | stats, chart, metrics, and revenue sessions |
@@ -146,6 +147,16 @@ Use MCP `tools/list` for the complete, machine-readable list and schemas.
   `userAgent` and trusted server-side `ip` in the payload.
 - Analytics URL filters and page metrics use `path`; the old `url` metric was
   removed. Host aggregation uses `hostname`.
+- Additional `filters` are preserved even when the corresponding named option
+  is omitted. An explicitly supplied named option takes precedence over `filters`.
+- Segment creation and updates support `filters`, `sessionPropertyFilters`,
+  `match`, `dateRange`, and `action`. Session-property data types are 1=string,
+  2=number, 3=boolean, 4=date, 5=array. Cohorts do not support session-property
+  filters. Unknown nested fields are rejected rather than silently discarded.
+- Annotations require Umami 3.4+ and website edit permission for writes. Supply
+  an ISO date or timestamp, a 1–500 character note, and optionally `allDay`
+  (default `true`). Updates replace all three fields; list date filters require
+  both `startAt` and `endAt` in milliseconds. An older server may return 404.
 - Supported time units are `minute`, `hour`, `day`, `month`, and `year`.
 - `get_event_series` and `get_sessions_weekly` require an IANA timezone.
 - `list_reports` requires `websiteId`; report execution sends
