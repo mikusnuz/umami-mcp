@@ -14,7 +14,7 @@ tools use the legacy report contracts that Umami 3.4 continues to support.
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 20 or newer, matching the MCP SDK's installed runtime dependencies
 - Umami v3.3-compatible self-hosted instance (3.4+ for API keys, session-property segments and annotations), or Umami Cloud with the corresponding routes enabled
 
 ## Installation

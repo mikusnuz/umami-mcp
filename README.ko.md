@@ -13,6 +13,8 @@ export, performance, revenue 같은 v3 기능군을 제공합니다.
 
 ## 설치
 
+MCP SDK의 런타임 의존성에 맞춰 Node.js 20 이상이 필요합니다.
+
 ```bash
 npm install -g @mikusnuz/umami-mcp
 # 또는
